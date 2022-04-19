@@ -30,6 +30,43 @@
       <div><button @click="updateTask">Update</button></div>
     </div>
 
+    <div>
+      <h2>Tasklist</h2>
+      <b>Open Tasks</b>
+      <div class="columns medium-4" v-for="(task, index) in openTasks " v-bind:key="task" v-bind:todo="task">
+        <table>
+          <tr>
+            <td>{{ index }}</td>
+            <td>{{ task.name }}</td>
+            <td>{{ task.description }}</td>
+            <td><input type="checkbox" id="opencheckbox" v-model="task.completed" @change="completeTask($event, index)"></td>
+          </tr>
+        </table>
+      </div>
+      <b>Completed Tasks</b>
+      <div class="columns medium-4" v-for="(task, index) in completedTasks " v-bind:key="task" v-bind:todo="task">
+        <table>
+          <tr>
+            <td>{{ index }}</td>
+            <td>{{ task.name }}</td>
+            <td>{{ task.description }}</td>
+            <td><input type="checkbox" id="completed-checkbox" v-model="task.completed" @change="completeTask($event, index)"></td>
+          </tr>
+        </table>
+      </div>
+      <b>Deleted Tasks</b>
+      <div class="columns medium-4" v-for="(task, index) in deletedTasks " v-bind:key="task" v-bind:todo="task">
+        <table>
+          <tr>
+            <td>{{ index }}</td>
+            <td>{{ task.name }}</td>
+            <td>{{ task.description }}</td>
+            <td><input type="checkbox" id="deleted-checkbox" v-model="task.completed" @change="completeTask($event, index)"></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
 
   </div>
 </template>
@@ -79,9 +116,10 @@ export default {
       object_id: '14',
       currentIndex: 0,
       currentTask: null,
-      allTasks: [],
       tasks: [],
       openTasks: [],
+      completedTasks: [],
+      deletedTasks: [],
       taskName: '',
       taskDescription: '',
       completed: false,
@@ -97,12 +135,17 @@ export default {
         const tasks = response.data.tasks
         if ( tasks ) {
           this.update = true
-          this.allTasks = tasks
           this.tasks = tasks.map(task => ({
             name: task.name,
             description: task.description,
             completed: task.completed,
           }))
+          this.openTasks = [];
+          this.completedTasks = []
+          this.deletedTasks = []
+          tasks.map(this.organizeTasks)
+          console.log(this.openTasks)
+          console.log(this.completedTasks)
         }
       } catch (err) {
         if (err.response) {
@@ -114,6 +157,17 @@ export default {
         } else {
           console.log("Client Error:", err)
         }
+      }
+    },
+
+    organizeTasks(task) {
+      if ( task.completed ) {
+        this.completedTasks.push(task)
+      } else {
+        this.openTasks.push(task)
+      }
+      if ( task.deleted ) {
+        this.deletedTasks.push(task)
       }
     },
 
