@@ -72,41 +72,13 @@
 </template>
 
 <script>
-import "devextreme/data/odata/store";
 import axios from "axios";
-
-const priorities = [
-  { name: "High", value: 4 },
-  { name: "Urgent", value: 3 },
-  { name: "Normal", value: 2 },
-  { name: "Low", value: 1 }
-];
 
 const taskEngineUrl = 'https://us-central1-developer-playground-328319.cloudfunctions.net/service-tasks-engine';
 
 export default {
   setup() {
-    const dataSourceConfig = {
-      store: {
-        type: "odata",
-        key: "Task_ID",
-        url: "https://js.devexpress.com/Demos/DevAV/odata/Tasks"
-      },
-      expand: "ResponsibleEmployee",
-      select: [
-        "Task_ID",
-        "Task_Subject",
-        "Task_Start_Date",
-        "Task_Due_Date",
-        "Task_Status",
-        "Task_Priority",
-        "Task_Completion",
-        "ResponsibleEmployee/Employee_Full_Name"
-      ]
-    };
     return {
-      dataSourceConfig,
-      priorities
     };
   },
 
@@ -195,15 +167,7 @@ export default {
         this.update ? await axios.put(url, tasksJSON, config) : await axios.post(url, tasksJSON, config);
         this.getTasks()
       } catch (err) {
-        if (err.response) {
-          // client received an error response (5xx, 4xx)
-          console.log("Server Error:", err)
-        } else if (err.request) {
-          // client never received a response, or request never left
-          console.log("Network Error:", err)
-        } else {
-          console.log("Client Error:", err)
-        }
+        this.handleServerError(err)
       }
     },
 
@@ -213,15 +177,19 @@ export default {
         await axios.delete(url);
         this.getTasks()
       } catch (err) {
-        if (err.response) {
-          // client received an error response (5xx, 4xx)
-          console.log("Server Error:", err)
-        } else if (err.request) {
-          // client never received a response, or request never left
-          console.log("Network Error:", err)
-        } else {
-          console.log("Client Error:", err)
-        }
+        this.handleServerError(err)
+      }
+    },
+
+    handleServerError(error) {
+      if (error.response) {
+        // client received an error response (5xx, 4xx)
+        console.log("Server Error:", error)
+      } else if (error.request) {
+        // client never received a response, or request never left
+        console.log("Network Error:", error)
+      } else {
+        console.log("Client Error:", error)
       }
     },
 
