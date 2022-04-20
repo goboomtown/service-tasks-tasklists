@@ -1,6 +1,40 @@
 <template>
   <div>
     <h2 class="content-block">Tasks</h2>
+    <DxDataGrid
+          :data-source="tasks"
+          key-expr="ID"
+          :columns="columns"
+          :show-borders="true">
+
+    <dx-column data-field="name"
+               caption="Name"
+               :width="90"
+               :hiding-priority="2" />
+
+    <dx-column
+        data-field="description"
+        caption="Description"
+        :width="190"
+        :hiding-priority="8"
+    />
+
+    <dx-column
+        data-field="completed"
+        caption="Completed"
+        :hiding-priority="6"
+    />
+
+    </DxDataGrid>
+
+<!--    <form class="task-form" @submit.prevent="onSubmit">-->
+<!--      <dx-form :form-data="formData" >-->
+<!--      </dx-form>-->
+<!--    </form>-->
+  </div>
+
+  <div>
+    <h2 class="content-block">Tasks</h2>
 
     <div class="columns medium-4" v-for="(task, index) in tasks " v-bind:key="task" v-bind:todo="task">
       <table>
@@ -73,13 +107,49 @@
 
 <script>
 import axios from "axios";
+// import DxForm, {
+//   // DxItem,
+//   // DxEmailRule,
+//   // DxRequiredRule,
+//   // DxLabel,
+//   // DxButtonItem,
+//   // DxButtonOptions
+// } from "devextreme-vue/form";
+import DxDataGrid, {
+  DxColumn,
+} from "devextreme-vue/data-grid";
+import { reactive } from 'vue';
 
 const taskEngineUrl = 'https://us-central1-developer-playground-328319.cloudfunctions.net/service-tasks-engine';
 
 export default {
   setup() {
+    const formData = reactive({
+      email:"",
+      password:""
+    });
+
+    async function onSubmit() {
+      const { email, password } = formData;
+      console.log(email, password)
+    }
+
     return {
+      formData,
+      onSubmit
     };
+  },
+
+  components: {
+    DxDataGrid,
+    DxColumn,
+    // DxForm,
+    // DxEmailRule,
+    // DxRequiredRule,
+    // DxItem,
+    // DxLabel,
+    // DxButtonItem,
+    // DxButtonOptions
   },
 
   data() {
@@ -96,6 +166,8 @@ export default {
       taskDescription: '',
       completed: false,
       update: false,
+      columns: ['name', 'description', 'completed'],
+      id: 0,
     }
   },
 
@@ -107,11 +179,15 @@ export default {
         const tasks = response.data.tasks
         if ( tasks ) {
           this.update = true
-          this.tasks = tasks.map(task => ({
-            name: task.name,
-            description: task.description,
-            completed: task.completed,
-          }))
+          this.id = 0
+          // tasks.map(task => ({
+          //   ID: id++,
+          //   name: task.name,
+          //   description: task.description,
+          //   completed: task.completed,
+          // }))
+          this.tasks = tasks;
+          console.log(this.tasks)
           this.openTasks = [];
           this.completedTasks = []
           this.deletedTasks = []
@@ -133,6 +209,7 @@ export default {
     },
 
     organizeTasks(task) {
+      task.ID = this.id++
       if ( task.completed ) {
         this.completedTasks.push(task)
       } else {
@@ -229,7 +306,5 @@ export default {
     this.getTasks();
   },
 
-  components: {
-  }
 };
 </script>

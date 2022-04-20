@@ -10,4 +10,12 @@ import appInfo from "./app-info";
 const app = createApp(App);
 app.use(router);
 app.config.globalProperties.$appInfo = appInfo;
-app.mount('#app');
+// app.mount('#app');
+
+if ((window.location.href.indexOf("goboomtown.com") >= 0)) {
+    window.VUETASKS = app;
+    app.mount('#vuetasks');
+} else {
+    app.mount('#app');
+}
+
