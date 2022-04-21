@@ -17,7 +17,7 @@
     <div>Name: <input v-model="taskName"></div>
     <div>Description: <input v-model="taskDescription"></div>
     <button @click="showHomeView">Cancel</button>
-    <button @click="saveNewTask">Add</button>
+    <button @click="saveNewTask">Save</button>
   </div>
 
   <div id="task-edit-view" v-show="showTaskEditView">
@@ -27,7 +27,7 @@
       <div>Completed: <input type="checkbox" id="edit-checkbox" v-model="completed"></div>
       <button @click="showHomeView">Cancel</button>
       <button @click="deleteTask">Delete</button>
-      <button @click="saveTask">Update</button>
+      <button @click="saveTask">Save</button>
   </div>
 
   <div id="task-list-view" v-show="showTaskListView">
