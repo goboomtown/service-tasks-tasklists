@@ -13,9 +13,16 @@ app.config.globalProperties.$appInfo = appInfo;
 // app.mount('#app');
 
 if ((window.location.href.indexOf("goboomtown.com") >= 0)) {
-    window.VUETASKS = app;
-    app.mount('#vuetasks');
+    // mount happens in v4 -> app/view/taskslists/TasksVue.js
+    window.VUETASKS = {
+        app: app,
+        config: {}
+    };
 } else {
+    window.VUETASKS = {};
+    window.VUETASKS.config = {};
+    window.VUETASKS.config.serviceConfig = {};
+    window.VUETASKS.config.currentCaseRecord = {};
     app.mount('#app');
 }
 

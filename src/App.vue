@@ -8,7 +8,7 @@
 
 <script>
 // import HomeScreen from './components/HomeScreen.vue'
-import TasksView from './views/tasks-page.vue'
+import TasksView from './views/tasks-view.vue'
 
 export default {
   name: 'App',
