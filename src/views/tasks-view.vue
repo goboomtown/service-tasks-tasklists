@@ -133,6 +133,13 @@ export default {
     addTask() {
       this.hideAllViews()
       this.showTaskAddView = true
+      this.clearTaskFields()
+    },
+
+    clearTaskFields() {
+      this.taskName = ''
+      this.taskDescription = ''
+      this.completed = false
     },
 
     saveNewTask() {
