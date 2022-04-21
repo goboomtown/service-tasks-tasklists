@@ -131,9 +131,9 @@ export default {
     },
 
     addTask() {
+      this.clearTaskFields()
       this.hideAllViews()
       this.showTaskAddView = true
-      this.clearTaskFields()
     },
 
     clearTaskFields() {
