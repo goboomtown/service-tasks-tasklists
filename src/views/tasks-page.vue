@@ -1,52 +1,50 @@
 <template>
+<!--  <div>-->
+<!--    <h2 class="content-block">Tasks</h2>-->
+<!--    <DxDataGrid-->
+<!--          :data-source="tasks"-->
+<!--          key-expr="ID"-->
+<!--          :columns="columns"-->
+<!--          :show-borders="true">-->
+
+<!--    <dx-column data-field="name"-->
+<!--               caption="Name"-->
+<!--               :width="90"-->
+<!--               :hiding-priority="2" />-->
+
+<!--    <dx-column-->
+<!--        data-field="description"-->
+<!--        caption="Description"-->
+<!--        :width="190"-->
+<!--        :hiding-priority="8"-->
+<!--    />-->
+
+<!--    <dx-column-->
+<!--        data-field="completed"-->
+<!--        caption="Completed"-->
+<!--        :hiding-priority="6"-->
+<!--    />-->
+
+<!--    </DxDataGrid>-->
+
+<!--&lt;!&ndash;    <form class="task-form" @submit.prevent="onSubmit">&ndash;&gt;-->
+<!--&lt;!&ndash;      <dx-form :form-data="formData" >&ndash;&gt;-->
+<!--&lt;!&ndash;      </dx-form>&ndash;&gt;-->
+<!--&lt;!&ndash;    </form>&ndash;&gt;-->
+<!--  </div>-->
+
   <div>
     <h2 class="content-block">Tasks</h2>
-    <DxDataGrid
-          :data-source="tasks"
-          key-expr="ID"
-          :columns="columns"
-          :show-borders="true">
 
-    <dx-column data-field="name"
-               caption="Name"
-               :width="90"
-               :hiding-priority="2" />
-
-    <dx-column
-        data-field="description"
-        caption="Description"
-        :width="190"
-        :hiding-priority="8"
-    />
-
-    <dx-column
-        data-field="completed"
-        caption="Completed"
-        :hiding-priority="6"
-    />
-
-    </DxDataGrid>
-
-<!--    <form class="task-form" @submit.prevent="onSubmit">-->
-<!--      <dx-form :form-data="formData" >-->
-<!--      </dx-form>-->
-<!--    </form>-->
-  </div>
-
-  <div>
-    <h2 class="content-block">Tasks</h2>
-
-    <div class="columns medium-4" v-for="(task, index) in tasks " v-bind:key="task" v-bind:todo="task">
-      <table>
-        <tr>
-          <td>{{ index }}</td>
-          <td>{{ task.name }}</td>
-          <td>{{ task.description }}</td>
+    <table>
+<!--    <div class="columns medium-4" v-for="(task, index) in tasks " v-bind:key="task" v-bind:todo="task">-->
+        <tr v-for="(task, index) in tasks " v-bind:key="task" v-bind:todo="task">
+          <td>{{ task.name }}<br>{{ task.description }}</td>
           <td><input type="checkbox" id="checkbox" v-model="task.completed" @change="completeTask($event, index)"></td>
           <td><button @click="editTask(task, index)">-></button></td>
         </tr>
-      </table>
-    </div>
+<!--    </div>-->
+    </table>
 
     <div>
       <h2>Add Task</h2>
@@ -115,9 +113,9 @@ import axios from "axios";
 //   // DxButtonItem,
 //   // DxButtonOptions
 // } from "devextreme-vue/form";
-import DxDataGrid, {
-  DxColumn,
-} from "devextreme-vue/data-grid";
+// import DxDataGrid, {
+//   DxColumn,
+// } from "devextreme-vue/data-grid";
 import { reactive } from 'vue';
 
 const taskEngineUrl = 'https://us-central1-developer-playground-328319.cloudfunctions.net/service-tasks-engine';
@@ -141,9 +139,9 @@ export default {
   },
 
   components: {
-    DxDataGrid,
-    DxColumn,
-    // DxForm,
+    // DxDataGrid,
+    // DxColumn,
+    // // DxForm,
     // DxEmailRule,
     // DxRequiredRule,
     // DxItem,
@@ -180,12 +178,6 @@ export default {
         if ( tasks ) {
           this.update = true
           this.id = 0
-          // tasks.map(task => ({
-          //   ID: id++,
-          //   name: task.name,
-          //   description: task.description,
-          //   completed: task.completed,
-          // }))
           this.tasks = tasks;
           console.log(this.tasks)
           this.openTasks = [];
@@ -196,15 +188,7 @@ export default {
           console.log(this.completedTasks)
         }
       } catch (err) {
-        if (err.response) {
-          // client received an error response (5xx, 4xx)
-          console.log("Server Error:", err)
-        } else if (err.request) {
-          // client never received a response, or request never left
-          console.log("Network Error:", err)
-        } else {
-          console.log("Client Error:", err)
-        }
+        this.handleServerError(err)
       }
     },
 

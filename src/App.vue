@@ -1,90 +1,35 @@
 <template>
   <div id="root">
-    <div :class="cssClasses">
-      <component
-        :is="$route.meta.layout"
-        :title="title"
-        :is-x-small="screen.getScreenSizeInfo.isXSmall"
-        :is-large="screen.getScreenSizeInfo.isLarge"
-      >
-      <div class="content">
-        <router-view></router-view>
-      </div>
-        <template #footer>
-          <app-footer />
-        </template>
-      </component>
-    </div>
+    <!-- <img alt="Vue logo" src="./assets/bt-logo.png"> -->
+    <!-- <HomeScreen msg="Welcome to Boomtown Chat"/> -->
+    <TasksView />
   </div>
 </template>
 
 <script>
-import AppFooter from "./components/app-footer";
-import { sizes, subscribe, unsubscribe } from "./utils/media-query";
-import {
-  getCurrentInstance,
-  reactive,
-  onMounted,
-  onBeforeUnmount,
-  computed
-} from "vue";
-
-function getScreenSizeInfo() {
-  const screenSizes = sizes();
-
-  return {
-    isXSmall: screenSizes["screen-x-small"],
-    isLarge: screenSizes["screen-large"],
-    cssClasses: Object.keys(screenSizes).filter(cl => screenSizes[cl])
-  };
-}
+// import HomeScreen from './components/HomeScreen.vue'
+import TasksView from './views/tasks-page.vue'
 
 export default {
+  name: 'App',
   components: {
-    AppFooter
-  },
-  setup() {
-    const vm = getCurrentInstance();
-
-    const title = vm.proxy.$appInfo.title;
-    const screen = reactive({ getScreenSizeInfo: {} });
-    screen.getScreenSizeInfo = getScreenSizeInfo();
-    
-    function screenSizeChanged () {
-      screen.getScreenSizeInfo = getScreenSizeInfo();
-    }
-
-    onMounted(() => {
-      subscribe(screenSizeChanged);
-    });
-
-    onBeforeUnmount(() => {
-      unsubscribe(screenSizeChanged);
-    });
-
-    const cssClasses = computed(() => {
-      return ["app"].concat(screen.getScreenSizeInfo.cssClasses);
-    });
-
-    return {
-      title,
-      screen,
-      cssClasses
-    };
+    // HomeScreen,
+    TasksView
   }
-};
+}
 </script>
 
 <style lang="scss">
 html,
 body {
-  margin: 0px;
-  min-height: 100%;
-  height: 100%;
+  min-height: 99%;
+  height: 99%;
+  width: 99%;
+  margin-left: 5px;
 }
 
 #root {
-  height: 100%;
+  height: 99%;
 }
 
 * {
@@ -95,7 +40,5 @@ body {
   @import "./themes/generated/variables.base.scss";
   background-color: darken($base-bg, 5);
   display: flex;
-  height: 100%;
-  width: 100%;
 }
 </style>
