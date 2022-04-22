@@ -2,9 +2,9 @@
   <div id="tasks-view" v-show="showTasksView">
     <h2 class="content-block">Tasks</h2>
     <table>
-        <tr v-for="(task, index) in openTasks " v-bind:key="task" v-bind:todo="task">
+        <tr v-for="task in topOpenTasks " v-bind:key="task" v-bind:todo="task">
           <td>{{ task.name }}<br>{{ task.description }}</td>
-          <td><input type="checkbox" id="checkbox" v-model="task.completed" @change="completeTask($event, index)"></td>
+          <td><input type="checkbox" id="checkbox" v-model="task.completed" @change="completeTask(task, $event)"></td>
           <td><button @click="editTask(task)">-></button></td>
         </tr>
     </table>
@@ -26,7 +26,7 @@
       <div>Description: <input v-model="taskDescription"></div>
       <div>Completed: <input type="checkbox" id="edit-checkbox" v-model="completed"></div>
       <button @click="showHomeView">Cancel</button>
-      <button @click="deleteTask">Delete</button>
+      <button @click="deleteCurrentTask">Delete</button>
       <button @click="saveTask">Save</button>
   </div>
 
@@ -34,23 +34,26 @@
     <h2 class="content-block">Tasklist</h2>
       <b>Open Tasks</b>
         <table>
-          <tr v-for="(task, index) in openTasks " v-bind:key="task" v-bind:todo="task">
+          <tr v-for="task in openTasks " v-bind:key="task" v-bind:todo="task">
             <td>{{ task.name }}<br>{{ task.description }}</td>
-            <td><input type="checkbox" id="open-checkbox" v-model="task.completed" @change="completeTask($event, index)"></td>
+            <td><input type="checkbox" id="open-checkbox" v-model="task.completed" @change="completeTask(task, $event)"></td>
+            <td><button @click="deleteTask(task)">Delete</button></td>
           </tr>
         </table>
        <b>Completed Tasks</b>
         <table>
-          <tr v-for="(task, index) in completedTasks " v-bind:key="task" v-bind:todo="task">
+          <tr v-for="task in completedTasks " v-bind:key="task" v-bind:todo="task">
             <td>{{ task.name }}<br>{{ task.description }}</td>
-            <td><input type="checkbox" id="completed-checkbox" v-model="task.completed" @change="completeTask($event, index)"></td>
+            <td><input type="checkbox" id="completed-checkbox" v-model="task.completed" @change="completeTask(task, $event)"></td>
+            <td><button @click="deleteTask(task)">Delete</button></td>
           </tr>
         </table>
       <b>Deleted Tasks</b>
         <table>
-          <tr v-for="(task, index) in deletedTasks " v-bind:key="task" v-bind:todo="task">
+          <tr v-for="task in deletedTasks " v-bind:key="task" v-bind:todo="task">
             <td>{{ task.name }}<br>{{ task.description }}</td>
-            <td><input type="checkbox" id="deleted-checkbox" v-model="task.completed" @change="completeTask($event, index)"></td>
+            <td><input type="checkbox" id="deleted-checkbox" v-model="task.completed" @change="completeTask(task, $event)"></td>
+            <td><button @click="undeleteTask(task)">Undelete</button></td>
           </tr>
         </table>
     <button @click="showHomeView">Cancel</button>
@@ -59,25 +62,13 @@
 
 <script>
 import axios from "axios";
-import { reactive } from 'vue';
 
 const taskEngineUrl = 'https://us-central1-developer-playground-328319.cloudfunctions.net/service-tasks-engine';
 
 export default {
   setup() {
-    const formData = reactive({
-      email:"",
-      password:""
-    });
-
-    async function onSubmit() {
-      const { email, password } = formData;
-      console.log(email, password)
-    }
 
     return {
-      formData,
-      onSubmit
     };
   },
 
@@ -108,12 +99,13 @@ export default {
       openTasks: [],
       completedTasks: [],
       deletedTasks: [],
+      topOpenTasks: [],
       taskName: '',
       taskDescription: '',
       completed: false,
       update: false,
-      columns: ['name', 'description', 'completed'],
       id: 0,
+      maxOpenTasks: 3,
     }
   },
 
@@ -130,6 +122,16 @@ export default {
       this.showTasksView = true
     },
 
+    showAddView() {
+      this.hideAllViews()
+      this.showTaskAddView = true
+    },
+
+    showListView() {
+      this.hideAllViews()
+      this.showTaskListView = true
+    },
+
     addTask() {
       this.clearTaskFields()
       this.hideAllViews()
@@ -143,17 +145,29 @@ export default {
     },
 
     saveNewTask() {
-      const task = { name: this.taskName, description: this.taskDescription, completed: false }
-      this.tasks.push(task)
+      if ( !this.validateRequiredFields() ) {
+        return
+      }
+      this.tasks.push(this.buildTaskFromFormFields())
       this.saveTasks()
       this.showHomeView()
     },
 
     saveTask() {
-      const task = { name: this.taskName, description: this.taskDescription, completed: false, deleted: false }
-      this.tasks[this.currentIndex] = task
+      if ( !this.validateRequiredFields() ) {
+        return
+      }
+      this.tasks[this.currentIndex] = this.buildTaskFromFormFields()
       this.saveTasks()
       this.showHomeView()
+    },
+
+    buildTaskFromFormFields() {
+      return { name: this.taskName, description: this.taskDescription, completed: this.completed, deleted: false }
+    },
+
+    validateRequiredFields() {
+      return this.taskName.length>0 && this.taskDescription>0
     },
 
     listTasks() {
@@ -171,20 +185,28 @@ export default {
       this.completed = task.completed
     },
 
-    deleteTask() {
-      const index = this.currentTask.ID
-      this.tasks.at(index).deleted = true
+    deleteCurrentTask() {
+      if ( !this.currentTask ) {
+        return
+      }
+      this.tasks.at(this.currentTask.ID).deleted = true
       this.saveTasks()
       this.showHomeView()
     },
 
-    completeTask(event, index) {
-      console.log(index)
-      const tasks = Array.from(this.tasks)
-      console.log(tasks)
-      const task = tasks[index]
+    deleteTask(task) {
+      this.tasks.at(task.ID).deleted = true
+      this.saveTasks()
+    },
+
+    undeleteTask(task) {
+      this.tasks.at(task.ID).deleted = false
+      this.saveTasks()
+    },
+
+    completeTask(task, event) {
       task.completed = event.target.checked
-      this.tasks = tasks
+      this.tasks[task.ID] = task
       this.saveTasks()
     },
     
@@ -193,29 +215,33 @@ export default {
       this.newTaskDescription = '';
     },
 
-    getUrl() {
-      return taskEngineUrl + '/' + this.object + '/' + this.object_id + '/default'
-    },
-
     clearTasks() {
       this.id = 0
       this.tasks = []
       this.openTasks = []
       this.completedTasks = []
       this.deletedTasks = []
+      this.topOpenTasks = []
     },
-    
+
+    getUrl() {
+      return taskEngineUrl + '/' + this.object + '/' + this.object_id + '/default'
+    },
+
     async getTasks() {
       try {
         const url = this.getUrl()
         const response = await axios.get(url)
         const tasks = response.data.tasks
-        console.log(tasks)
         if ( tasks ) {
           this.update = true
           this.clearTasks()
           this.tasks = tasks;
           tasks.map(this.organizeTasks)
+          this.topOpenTasks = this.openTasks.slice(0, this.maxOpenTasks)
+          if ( this.openTasks.length > 0 ) {
+            this.showHomeView()
+          }
         }
       } catch (err) {
         this.handleServerError(err)

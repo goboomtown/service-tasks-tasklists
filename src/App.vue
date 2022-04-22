@@ -2,7 +2,7 @@
   <div id="root">
     <!-- <img alt="Vue logo" src="./assets/bt-logo.png"> -->
     <!-- <HomeScreen msg="Welcome to Boomtown Chat"/> -->
-    <TasksView />
+    <TasksView ref="tasksView" />
   </div>
 </template>
 
@@ -15,7 +15,16 @@ export default {
   components: {
     // HomeScreen,
     TasksView
-  }
+  },
+  methods: {
+    showAddView() {
+      this.$refs.tasksView.showAddView()
+    },
+    showListView() {
+      this.$refs.tasksView.showListView()
+    },
+  },
+
 }
 </script>
 
