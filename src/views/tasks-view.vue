@@ -1,43 +1,41 @@
 <template>
-  <div id="tasks-view" v-show="showTasksView">
+  <div id="tasks-view" data-testid="tasks-show-tasks-view" v-show="showTasksView">
     <h2 class="content-block">Tasks</h2>
     <table>
         <tr v-for="task in topOpenTasks " v-bind:key="task" v-bind:todo="task">
           <td>{{ task.name }}<br>{{ task.description }}</td>
           <td><input type="checkbox" id="checkbox" v-model="task.completed" @change="completeTask(task, $event)"></td>
-          <td><button @click="editTask(task)">-></button></td>
+          <td><button data-testid="tasks-edit-task-button" @click="editTask(task)">-></button></td>
         </tr>
     </table>
-    <button @click="addTask">Add Task</button>
-    <button @click="listTasks">List Tasks</button>
   </div>
 
-  <div id="task-add-view" v-show="showTaskAddView">
+  <div id="task-add-view" data-testid="tasks-add-tasks-view" v-show="showTaskAddView">
     <h2 class="content-block">Add Task</h2>
     <div>Name: <input v-model="taskName"></div>
     <div>Description: <input v-model="taskDescription"></div>
-    <button @click="showHomeView">Cancel</button>
-    <button @click="saveNewTask">Save</button>
+    <button data-testid="tasks-add-task-cancel-button" @click="showHomeView">Cancel</button>
+    <button data-testid="tasks-add-task-save-button" @click="saveNewTask">Save</button>
   </div>
 
-  <div id="task-edit-view" v-show="showTaskEditView">
+  <div id="task-edit-view" data-testid="tasks-edit-tasks-view" v-show="showTaskEditView">
       <h2 class="content-block">Edit Task</h2>
       <div>Name: <input v-model="taskName"></div>
       <div>Description: <input v-model="taskDescription"></div>
       <div>Completed: <input type="checkbox" id="edit-checkbox" v-model="completed"></div>
-      <button @click="showHomeView">Cancel</button>
-      <button @click="deleteCurrentTask">Delete</button>
-      <button @click="saveTask">Save</button>
+      <button data-testid="tasks-edit-task-cancel-button" @click="showHomeView">Cancel</button>
+      <button data-testid="tasks-edit-task-delete-button" @click="deleteCurrentTask">Delete</button>
+      <button data-testid="tasks-edit-task-save-button" @click="saveTask">Save</button>
   </div>
 
-  <div id="task-list-view" v-show="showTaskListView">
+  <div id="task-list-view" data-testid="tasks-list-tasks-view" v-show="showTaskListView">
     <h2 class="content-block">Tasklist</h2>
       <b>Open Tasks</b>
         <table>
           <tr v-for="task in openTasks " v-bind:key="task" v-bind:todo="task">
             <td>{{ task.name }}<br>{{ task.description }}</td>
             <td><input type="checkbox" id="open-checkbox" v-model="task.completed" @change="completeTask(task, $event)"></td>
-            <td><button @click="deleteTask(task)">Delete</button></td>
+            <td><button data-testid="tasks-list-open-tasks-delete-button" @click="deleteTask(task)">Delete</button></td>
           </tr>
         </table>
        <b>Completed Tasks</b>
@@ -45,7 +43,7 @@
           <tr v-for="task in completedTasks " v-bind:key="task" v-bind:todo="task">
             <td>{{ task.name }}<br>{{ task.description }}</td>
             <td><input type="checkbox" id="completed-checkbox" v-model="task.completed" @change="completeTask(task, $event)"></td>
-            <td><button @click="deleteTask(task)">Delete</button></td>
+            <td><button data-testid="tasks-list-completed-tasks-delete-button" @click="deleteTask(task)">Delete</button></td>
           </tr>
         </table>
       <b>Deleted Tasks</b>
@@ -53,10 +51,10 @@
           <tr v-for="task in deletedTasks " v-bind:key="task" v-bind:todo="task">
             <td>{{ task.name }}<br>{{ task.description }}</td>
             <td><input type="checkbox" id="deleted-checkbox" v-model="task.completed" @change="completeTask(task, $event)"></td>
-            <td><button @click="undeleteTask(task)">Undelete</button></td>
+            <td><button data-testid="tasks-list-deleted-tasks-undelete-button" @click="undeleteTask(task)">Undelete</button></td>
           </tr>
         </table>
-    <button @click="showHomeView">Cancel</button>
+    <button data-testid="tasks-list-tasks-cancel-button" @click="showHomeView">Cancel</button>
   </div>
 </template>
 
@@ -69,7 +67,6 @@ export default {
   name: "TasksView",
   
   setup() {
-
     return {
     };
   },
@@ -88,13 +85,13 @@ export default {
 
   data() {
     return {
-      showTasksView: true,
+      showTasksView: false,
       showTaskAddView: false,
       showTaskEditView: false,
       showTaskListView: false,
       currentCaseRecord: null,
       object: 'case',
-      object_id: '14',
+      object_id: '20',
       currentIndex: 0,
       currentTask: null,
       tasks: [],
@@ -121,10 +118,14 @@ export default {
 
     showHomeView() {
       this.hideAllViews()
-      this.showTasksView = true
+      console.log(this.openTasks)
+      if ( this.openTasks.length > 0 ) {
+        this.showTasksView = true
+      }
     },
 
     showAddView() {
+      this.clearTaskFields()
       this.hideAllViews()
       this.showTaskAddView = true
     },
@@ -244,7 +245,7 @@ export default {
           this.tasks = tasks;
           tasks.map(this.organizeTasks)
           this.topOpenTasks = this.openTasks.slice(0, this.maxOpenTasks)
-          if ( !this.showTaskListView && this.openTasks.length>0 ) {
+          if ( !this.showTaskListView ) {
             this.showHomeView()
           }
         }

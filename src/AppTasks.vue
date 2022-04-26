@@ -2,7 +2,7 @@
   <div id="root">
     <!-- <img alt="Vue logo" src="./assets/bt-logo.png"> -->
     <!-- <HomeScreen msg="Welcome to Boomtown Chat"/> -->
-    <TasksView :key="key" ref="tasksView" />
+    <TasksView ref="tasksView" />
   </div>
 </template>
 
@@ -33,21 +33,10 @@ export default {
     forceUpdate() {
       this.key++;
     },
-    // async onMenuAddTask() {
-    //   console.log('onMenuAddTask');
-    // }
   },
 
   created() {
     this.rand = Math.round(Math.random() * 1000)
-  },
-
-  mounted() {
-    this.$refs.tasksView.showAddView()
-    window.test = this
-    // Event.$on("com.goboomtown.tasksview.menuAddTask", group => {
-    //   this.onMenuAddTask();
-    // });
   },
 
   data() {
