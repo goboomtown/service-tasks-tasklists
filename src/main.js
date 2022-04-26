@@ -4,19 +4,23 @@ import './themes/generated/theme.additional.css';
 import { createApp }  from "vue";
 // import router from "./router";
 
-import App from "./App";
+import App from "./AppTasks";
 import appInfo from "./app-info";
 
-const app = createApp(App);
+const app = createApp(App, { componentKey: 0 });
+
 // app.use(router);
 app.config.globalProperties.$appInfo = appInfo;
 // app.mount('#app');
 
 if ((window.location.href.indexOf("goboomtown.com") >= 0)) {
-    // mount happens in v4 -> app/view/taskslists/TasksVue.js
+    // mount happens in v4 -> app/view/taskslists/TasksVue.js;
     window.VUETASKS = {
-        app: app,
-        config: {}
+        createApp: createApp.bind(this),
+        App: App,
+        config: {
+            //VueJS bootstrap configs passed from app-v4
+        }
     };
 } else {
     window.VUETASKS = {};

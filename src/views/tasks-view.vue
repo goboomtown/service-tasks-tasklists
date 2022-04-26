@@ -66,6 +66,8 @@ import axios from "axios";
 const taskEngineUrl = 'https://us-central1-developer-playground-328319.cloudfunctions.net/service-tasks-engine';
 
 export default {
+  name: "TasksView",
+  
   setup() {
 
     return {
@@ -148,7 +150,10 @@ export default {
       if ( !this.validateRequiredFields() ) {
         return
       }
-      this.tasks.push(this.buildTaskFromFormFields())
+      const task = this.buildTaskFromFormFields()
+      console.log(task)
+      console.log(this.tasks)
+      this.tasks.push(task)
       this.saveTasks()
       this.showHomeView()
     },
@@ -167,7 +172,7 @@ export default {
     },
 
     validateRequiredFields() {
-      return this.taskName.length>0 && this.taskDescription>0
+      return this.taskName.length>0
     },
 
     listTasks() {
@@ -239,7 +244,7 @@ export default {
           this.tasks = tasks;
           tasks.map(this.organizeTasks)
           this.topOpenTasks = this.openTasks.slice(0, this.maxOpenTasks)
-          if ( this.openTasks.length > 0 ) {
+          if ( !this.showTaskListView && this.openTasks.length>0 ) {
             this.showHomeView()
           }
         }

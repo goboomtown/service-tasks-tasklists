@@ -2,7 +2,7 @@
   <div id="root">
     <!-- <img alt="Vue logo" src="./assets/bt-logo.png"> -->
     <!-- <HomeScreen msg="Welcome to Boomtown Chat"/> -->
-    <TasksView ref="tasksView" />
+    <TasksView :key="key" ref="tasksView" />
   </div>
 </template>
 
@@ -12,10 +12,17 @@ import TasksView from './views/tasks-view.vue'
 
 export default {
   name: 'App',
+
   components: {
-    // HomeScreen,
     TasksView
   },
+
+  computed: {
+    getTasksView() {
+      return this.$refs['tasksView'].instance;
+    },
+  },
+
   methods: {
     showAddView() {
       this.$refs.tasksView.showAddView()
@@ -23,9 +30,35 @@ export default {
     showListView() {
       this.$refs.tasksView.showListView()
     },
+    forceUpdate() {
+      this.key++;
+    },
+    // async onMenuAddTask() {
+    //   console.log('onMenuAddTask');
+    // }
+  },
+
+  created() {
+    this.rand = Math.round(Math.random() * 1000)
+  },
+
+  mounted() {
+    this.$refs.tasksView.showAddView()
+    window.test = this
+    // Event.$on("com.goboomtown.tasksview.menuAddTask", group => {
+    //   this.onMenuAddTask();
+    // });
+  },
+
+  data() {
+    return {
+      key: 0,
+      rand: ''
+    }
   },
 
 }
+
 </script>
 
 <style lang="scss">
