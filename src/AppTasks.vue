@@ -24,14 +24,16 @@ export default {
   },
 
   methods: {
+    setEventHandler(handler) {
+      this.$refs.tasksView.setEventHandler(handler)
+    },
+
     showAddView() {
       this.$refs.tasksView.showAddView()
     },
+
     showListView() {
       this.$refs.tasksView.showListView()
-    },
-    forceUpdate() {
-      this.key++;
     },
   },
 

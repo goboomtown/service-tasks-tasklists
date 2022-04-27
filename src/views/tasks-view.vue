@@ -85,6 +85,15 @@ export default {
 
   data() {
     return {
+      action: {
+        completed: 'completed',
+        uncompleted: 'uncompleted',
+        added:'added',
+        edited: 'edited',
+        deleted: 'deleted',
+        undeleted: 'undeleted'
+      },
+
       showTasksView: false,
       showTaskAddView: false,
       showTaskEditView: false,
@@ -105,10 +114,21 @@ export default {
       update: false,
       id: 0,
       maxOpenTasks: 3,
+      handler: null
     }
   },
 
   methods: {
+    setEventHandler(handler) {
+      this.handler = handler
+    },
+
+    sendEvent(event) {
+      if ( this.handler ) {
+        this.handler(event)
+      }
+    },
+
     hideAllViews() {
       this.showTasksView = false
       this.showTaskAddView = false
@@ -155,6 +175,11 @@ export default {
       console.log(task)
       console.log(this.tasks)
       this.tasks.push(task)
+      this.sendEvent({
+        action: this.action.added,
+        task: task,
+        time: new Date().toISOString()
+      })
       this.saveTasks()
       this.showHomeView()
     },
@@ -164,6 +189,11 @@ export default {
         return
       }
       this.tasks[this.currentIndex] = this.buildTaskFromFormFields()
+      this.sendEvent({
+        action: this.action.edited,
+        task: this.tasks[this.currentIndex],
+        time: new Date().toISOString()
+      })
       this.saveTasks()
       this.showHomeView()
     },
@@ -196,22 +226,42 @@ export default {
         return
       }
       this.tasks.at(this.currentTask.ID).deleted = true
+      this.sendEvent({
+        action: this.action.deleted,
+        task: this.currentTask,
+        time: new Date().toISOString()
+      })
       this.saveTasks()
       this.showHomeView()
     },
 
     deleteTask(task) {
       this.tasks.at(task.ID).deleted = true
+      this.sendEvent({
+        action: this.action.deleted,
+        task: task,
+        time: new Date().toISOString()
+      })
       this.saveTasks()
     },
 
     undeleteTask(task) {
       this.tasks.at(task.ID).deleted = false
+      this.sendEvent({
+        action: this.action.undeleted,
+        task: task,
+        time: new Date().toISOString()
+      })
       this.saveTasks()
     },
 
     completeTask(task, event) {
       task.completed = event.target.checked
+      this.sendEvent({
+        action: event.target.checked?this.action.completed:this.action.uncompleted,
+        task: task,
+        time: new Date().toISOString()
+      })
       this.tasks[task.ID] = task
       this.saveTasks()
     },
