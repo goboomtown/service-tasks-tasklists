@@ -86,12 +86,12 @@ export default {
   data() {
     return {
       action: {
-        completed: 'completed',
-        uncompleted: 'uncompleted',
-        added:'added',
-        edited: 'edited',
-        deleted: 'deleted',
-        undeleted: 'undeleted'
+        completed: 'task-completed',
+        uncompleted: 'task-uncompleted',
+        added:'task-added',
+        edited: 'task-edited',
+        deleted: 'task-deleted',
+        undeleted: 'task-undeleted'
       },
 
       showTasksView: false,
