@@ -23,13 +23,13 @@
   </div>
 
   <div id="task-edit-view" data-testid="tasks-edit-tasks-view" v-show="isPanelVisible.edit">
-      <h2 class="content-block">Edit Task</h2>
-      <div>Name: <input v-model="taskName" data-testid="tasks-edit-name"></div>
-      <div>Description: <input v-model="taskDescription" data-testid="tasks-edit-description"></div>
-      <div>Completed: <input type="checkbox" id="edit-checkbox" data-testid="tasks-edit-complete-checkbox" v-model="completed"></div>
-      <button data-testid="tasks-edit-task-cancel-button" @click="showHomeView">Cancel</button>
-      <button data-testid="tasks-edit-task-delete-button" @click="deleteCurrentTask">Delete</button>
-      <button data-testid="tasks-edit-task-save-button" @click="saveTask">Save</button>
+    <h2 class="content-block">Edit Task</h2>
+    <div>Name: <input v-model="taskName" data-testid="tasks-edit-name"></div>
+    <div>Description: <input v-model="taskDescription" data-testid="tasks-edit-description"></div>
+    <div>Completed: <input type="checkbox" id="edit-checkbox" data-testid="tasks-edit-complete-checkbox" v-model="completed"></div>
+    <button data-testid="tasks-edit-task-cancel-button" @click="showHomeView">Cancel</button>
+    <button data-testid="tasks-edit-task-delete-button" @click="deleteCurrentTask">Delete</button>
+    <button data-testid="tasks-edit-task-save-button" @click="saveTask">Save</button>
   </div>
 
   <div id="task-list-view" data-testid="tasks-list-tasks-view" v-show="isPanelVisible.list">
@@ -184,8 +184,6 @@ export default {
         return
       }
       const task = this.buildTaskFromFormFields()
-      console.log(task)
-      console.log(this.tasks)
       this.tasks.push(task)
       this.sendEvent({
         action: this.action.added,

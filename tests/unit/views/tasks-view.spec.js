@@ -1,6 +1,5 @@
 import { shallowMount } from '@vue/test-utils'
 import TasksView from '../../../src/views/tasks-view.vue'
-import App from '../../../src/AppTasks.vue'
 
 describe('tasks-view.vue', () => {
     let wrapper;
@@ -22,7 +21,7 @@ describe('tasks-view.vue', () => {
     })
 
     test('can you show tasks view', async () => {
-        wrapper.showHomeView()
+        wrapper.vm.showHomeView()
         expect(wrapper.showTasksView).toBe(true)
     })
 })
