@@ -209,7 +209,7 @@ The component also exposes events in the format:
 
 ```js
 {
-    action: this.action.added,
+    action: action,
     task: task,
     time: new Date().toISOString()
 }
