@@ -104,7 +104,7 @@ export default {
         deleted: [],
         topOpen: [],
       },
-      isMenuUnavailable: false,
+      isMenuUnavailable: true,
       isPanelVisible: {
         tasks: false,
         add: false,
@@ -146,7 +146,7 @@ export default {
 
     showHomeView() {
       this.hidePanels()
-      console.log(this.openTasks)
+      console.log(this.tasks.open)
       if ( this.hasOpenTasks() || this.isMenuUnavailable ) {
         this.isPanelVisible.tasks = true
       }
@@ -184,7 +184,7 @@ export default {
         return
       }
       const task = this.buildTaskFromFormFields()
-      this.tasks.push(task)
+      this.tasks.all.push(task)
       this.sendEvent({
         action: this.action.added,
         task: task,
@@ -198,10 +198,10 @@ export default {
       if ( !this.validateRequiredFields() ) {
         return
       }
-      this.tasks[this.currentIndex] = this.buildTaskFromFormFields()
+      this.tasks.all[this.currentIndex] = this.buildTaskFromFormFields()
       this.sendEvent({
         action: this.action.edited,
-        task: this.tasks[this.currentIndex],
+        task: this.tasks.all[this.currentIndex],
         time: new Date().toISOString()
       })
       this.saveTasks()
@@ -235,7 +235,7 @@ export default {
       if ( !this.currentTask ) {
         return
       }
-      this.tasks.at(this.currentTask.ID).deleted = true
+      this.tasks.all.at(this.currentTask.ID).deleted = true
       this.sendEvent({
         action: this.action.deleted,
         task: this.currentTask,
@@ -246,7 +246,7 @@ export default {
     },
 
     deleteTask(task) {
-      this.tasks.at(task.ID).deleted = true
+      this.tasks.all.at(task.ID).deleted = true
       this.sendEvent({
         action: this.action.deleted,
         task: task,
@@ -256,7 +256,7 @@ export default {
     },
 
     undeleteTask(task) {
-      this.tasks.at(task.ID).deleted = false
+      this.tasks.all.at(task.ID).deleted = false
       this.sendEvent({
         action: this.action.undeleted,
         task: task,
@@ -272,7 +272,7 @@ export default {
         task: task,
         time: new Date().toISOString()
       })
-      this.tasks[task.ID] = task
+      this.tasks.all[task.ID] = task
       this.saveTasks()
     },
     
@@ -299,7 +299,7 @@ export default {
           this.clearTasks()
           this.tasks.all = tasks;
           tasks.map(this.organizeTasks)
-          this.tasks.topOpen = this.openTasks.slice(0, this.maxOpenTasks)
+          this.tasks.topOpen = this.tasks.open.slice(0, this.maxOpenTasks)
           if ( !this.isPanelVisible.list ) {
             this.showHomeView()
           }
@@ -316,7 +316,7 @@ export default {
       try {
         const url = this.getUrl()
         const tasks = new Object()
-        tasks.tasks = this.tasks
+        tasks.tasks = this.tasks.all
         const tasksJSON = JSON.stringify(tasks)
         const config = { headers: { 'Content-Type': 'text/plain' } }
         this.update ? await axios.put(url, tasksJSON, config) : await axios.post(url, tasksJSON, config);
