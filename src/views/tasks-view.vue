@@ -91,7 +91,7 @@ export default {
     return {
       action: {
         completed: 'task-completed',
-        uncompleted: 'task-uncompleted',
+        reopened: 'task-reopened',
         added:'task-added',
         edited: 'task-edited',
         deleted: 'task-deleted',
@@ -268,7 +268,7 @@ export default {
     completeTask(task, event) {
       task.completed = event.target.checked
       this.sendEvent({
-        action: event.target.checked?this.action.completed:this.action.uncompleted,
+        action: event.target.checked?this.action.completed:this.action.reopened,
         task: task,
         time: new Date().toISOString()
       })
