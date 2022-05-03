@@ -192,3 +192,38 @@ if ( vueTasksApp ) {
 }
 ```
 
+## Using the Tasks Vue Component
+
+By default the component will display at most the top 
+three (3) open tasks. 
+
+The component also exposes the following functions:
+
+    showAddView()   - replace the tasks with with an Add Task view
+ 
+    showListView()  - replace the tasks view with a Tasks List view
+
+    setEventHandler(handler) - set the event handler for the component
+
+The component also exposes events in the format:
+
+```js
+{
+    action: this.action.added,
+    task: task,
+    time: new Date().toISOString()
+}
+```
+
+where `action` may be one of:
+
+```js
+action: {
+    completed: 'task-completed',
+    uncompleted: 'task-uncompleted',
+    added:'task-added',
+    edited: 'task-edited',
+    deleted: 'task-deleted',
+    undeleted: 'task-undeleted'
+},
+```
