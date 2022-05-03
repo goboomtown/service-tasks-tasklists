@@ -104,7 +104,7 @@ export default {
         deleted: [],
         topOpen: [],
       },
-      isMenuUnavailable: true,
+      isMenuUnavailable: false,
       isPanelVisible: {
         tasks: false,
         add: false,
