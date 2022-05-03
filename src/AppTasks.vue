@@ -1,5 +1,5 @@
 <template>
-  <div id="root">
+  <div id="root-vue-tasks">
     <!-- <img alt="Vue logo" src="./assets/bt-logo.png"> -->
     <!-- <HomeScreen msg="Welcome to Boomtown Chat"/> -->
     <TasksView ref="tasksView" />
