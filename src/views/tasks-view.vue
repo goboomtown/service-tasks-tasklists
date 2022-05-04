@@ -1,69 +1,101 @@
 <template>
   <div id="tasks-view" data-testid="tasks-show-tasks-view" v-show="isPanelVisible.tasks">
-    <h2 class="content-block">Tasks</h2>
-    <table>
-        <tr v-for="task in tasks.topOpen " v-bind:key="task" v-bind:todo="task">
-          <td>{{ task.name }}<br>{{ task.description }}</td>
-          <td><input type="checkbox" id="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)"></td>
-          <td><button data-testid="tasks-edit-task-button" @click="editTask(task)">-></button></td>
-        </tr>
-    </table>
+    <h2>Tasks</h2>
+    <div class="tasks-list" v-for="task in tasks.topOpen " v-bind:key="task" v-bind:todo="task">
+      <div class="task-name-description">
+        <div class="task-name">{{ task.name }}</div>
+        <div class="task-description">{{ task.description }}</div>
+      </div>
+      <div class="tasks-actions">
+        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)">
+        <span data-testid="tasks-edit-task-button" @click="editTask(task)">&gt;</span>
+      </div>
+    </div>
     <div v-show="isMenuUnavailable">
-      <button data-testid="tasks-show-tasks-add-button" @click="showAddView">Add Task</button>
-      <button data-testid="tasks-show-tasks-list-button" @click="showListView">List Tasks</button>
+      <DxButton class="tasks-button" type="normal" text="Add Task" data-testid="tasks-show-tasks-add-button" @click="showAddView"/>
+      <DxButton class="tasks-button" type="normal" text="List Tasks" data-testid="tasks-show-tasks-list-button" @click="showListView"/>
     </div>
   </div>
 
   <div id="task-add-view" data-testid="tasks-add-tasks-view" v-show="isPanelVisible.add">
-    <h2 class="content-block">Add Task</h2>
-    <div>Name: <input v-model="taskName" data-testid="tasks-add-name"></div>
-    <div>Description: <input v-model="taskDescription" data-testid="tasks-add-description"></div>
-    <button data-testid="tasks-add-task-cancel-button" @click="showHomeView">Cancel</button>
-    <button data-testid="tasks-add-task-save-button" @click="saveNewTask">Save</button>
+    <h2>Add Task</h2>
+    <div>
+      <div class="label">Name:</div> <div><DxTextBox v-model:value="taskName" data-testid="tasks-add-name"/></div>
+    </div>
+    <div>
+      <div class="label">Description:</div> <div><DxTextBox v-model:value="taskDescription" data-testid="tasks-add-description"/></div>
+    </div>
+    <div class="tasks-buttons">
+      <DxButton class="tasks-button" type="normal" text="Cancel" data-testid="tasks-add-task-cancel-button" @click="showHomeView"/>
+      <DxButton class="tasks-button" type="default" text="Save" data-testid="tasks-add-task-save-button" @click="saveNewTask"/>
+    </div>
   </div>
 
   <div id="task-edit-view" data-testid="tasks-edit-tasks-view" v-show="isPanelVisible.edit">
-    <h2 class="content-block">Edit Task</h2>
-    <div>Name: <input v-model="taskName" data-testid="tasks-edit-name"></div>
-    <div>Description: <input v-model="taskDescription" data-testid="tasks-edit-description"></div>
-    <div>Completed: <input type="checkbox" id="edit-checkbox" data-testid="tasks-edit-complete-checkbox" v-model="completed"></div>
-    <button data-testid="tasks-edit-task-cancel-button" @click="showHomeView">Cancel</button>
-    <button data-testid="tasks-edit-task-delete-button" @click="deleteCurrentTask">Delete</button>
-    <button data-testid="tasks-edit-task-save-button" @click="saveTask">Save</button>
+    <h2>Edit Task</h2>
+    <div>
+      <div class="label">Name:</div> <div><DxTextBox v-model:value="taskName" data-testid="tasks-edit-name"/></div>
+    </div>
+    <div>
+      <div class="label">Description:</div> <div><DxTextBox v-model:value="taskDescription" data-testid="tasks-edit-description"/></div>
+    </div>
+    <div>
+      <div class="label">Completed: <input type="checkbox" id="edit-checkbox" data-testid="tasks-edit-complete-checkbox" v-model="completed"></div>
+    </div>
+    <div class="tasks-buttons flex">
+      <div class="delete">
+        <DxButton class="tasks-button" type="normal" text="Delete" data-testid="tasks-edit-task-delete-button" @click="deleteCurrentTask"/>
+      </div>
+      <div class="cancel-save">
+        <DxButton class="tasks-button" type="normal" text="Cancel" data-testid="tasks-edit-task-cancel-button" @click="showHomeView"/>
+        <DxButton class="tasks-button" type="default" text="Save" data-testid="tasks-edit-task-save-button" @click="saveTask"/>
+      </div>
+    </div>
   </div>
 
   <div id="task-list-view" data-testid="tasks-list-tasks-view" v-show="isPanelVisible.list">
-    <h2 class="content-block">Tasklist</h2>
-      <b>Open Tasks</b>
-        <table>
-          <tr v-for="task in tasks.open " v-bind:key="task" v-bind:todo="task">
-            <td>{{ task.name }}<br>{{ task.description }}</td>
-            <td><input type="checkbox" id="open-checkbox" data-testid="tasks-list-open-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)"></td>
-            <td><button data-testid="tasks-list-open-tasks-delete-button" @click="deleteTask(task)">Delete</button></td>
-          </tr>
-        </table>
-       <b>Completed Tasks</b>
-        <table>
-          <tr v-for="task in tasks.completed " v-bind:key="task" v-bind:todo="task">
-            <td>{{ task.name }}<br>{{ task.description }}</td>
-            <td><input type="checkbox" id="completed-checkbox" data-testid="tasks-list-completed-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)"></td>
-            <td><button data-testid="tasks-list-completed-tasks-delete-button" @click="deleteTask(task)">Delete</button></td>
-          </tr>
-        </table>
-      <b>Deleted Tasks</b>
-        <table>
-          <tr v-for="task in tasks.deleted " v-bind:key="task" v-bind:todo="task">
-            <td>{{ task.name }}<br>{{ task.description }}</td>
-            <td><input type="checkbox" id="deleted-checkbox" data-testid="tasks-list-deleted-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)"></td>
-            <td><button data-testid="tasks-list-deleted-tasks-undelete-button" @click="undeleteTask(task)">Undelete</button></td>
-          </tr>
-        </table>
-    <button data-testid="tasks-list-tasks-cancel-button" @click="showHomeView">Cancel</button>
+    <h2>Tasklist</h2>
+    <h3>Open Tasks</h3>
+    <div class="tasks-list" v-for="task in tasks.open " v-bind:key="task" v-bind:todo="task">
+      <div class="task-name-description">
+        <div class="task-name">{{ task.name }}</div>
+        <div class="task-description">{{ task.description }}</div>
+      </div>
+      <div class="tasks-actions">
+        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)">
+        <DxButton class="tasks-button" type="normal" text="Delete" data-testid="tasks-list-open-tasks-delete-button" @click="deleteTask(task)"/>
+      </div>
+    </div>
+    <h3>Completed Tasks</h3>
+    <div class="tasks-list" v-for="task in tasks.completed " v-bind:key="task" v-bind:todo="task">
+      <div class="task-name-description">
+        <div class="task-name">{{ task.name }}</div>
+        <div class="task-description">{{ task.description }}</div>
+      </div>
+      <div class="tasks-actions">
+        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)">
+        <DxButton class="tasks-button" type="normal" text="Delete" data-testid="tasks-list-open-tasks-delete-button" @click="deleteTask(task)"/>
+      </div>
+    </div>
+    <h3>Deleted Tasks</h3>
+    <div class="tasks-list" v-for="task in tasks.deleted " v-bind:key="task" v-bind:todo="task">
+      <div class="task-name-description">
+        <div class="task-name">{{ task.name }}</div>
+        <div class="task-description">{{ task.description }}</div>
+      </div>
+      <div class="tasks-actions">
+        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)">
+        <DxButton class="tasks-button" type="normal" text="Undelete" data-testid="tasks-list-deleted-tasks-undelete-button" @click="undeleteTask(task)"/>
+      </div>
+    </div>
+    <DxButton class="tasks-button" type="normal" text="Cancel" data-testid="tasks-list-tasks-cancel-button" @click="showHomeView"/>
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import DxButton from 'devextreme-vue/button';
+import DxTextBox from 'devextreme-vue/text-box';
 
 const taskEngineUrl = 'https://us-central1-developer-playground-328319.cloudfunctions.net/service-tasks-engine';
 
@@ -85,6 +117,8 @@ export default {
   },
 
   components: {
+    DxButton,
+    DxTextBox
   },
 
   data() {
@@ -359,3 +393,63 @@ export default {
 
 };
 </script>
+<style scoped>
+div{
+  color: #4F4F4F;
+}
+h2 {
+  color: #626363;
+  font-size: 1rem;
+}
+h3 {
+  color: #626363;
+  font-size: .95rem;
+}
+.label {
+  font-size: .8rem;
+  line-height: 2rem;
+}
+.tasks-buttons{
+  text-align: right;
+  padding: 1rem 0;
+}
+.flex{
+  display: flex;
+}
+.delete{
+  flex: 1;
+  text-align: left;
+}
+.cancel-save{
+  flex: 1;
+}
+.tasks-button{
+  margin: 0 .5rem;
+}
+.tasks-list{
+  display: flex;
+  width: 100%;
+}
+.task-name-description{
+  flex: 1;
+}
+.task-name{
+  font-weight: bold;
+  font-size: .9rem;
+}
+.task-description{
+  font-size: .8rem;
+}
+.tasks-actions{
+  flex: 1;
+  align-items: center;
+  text-align: right;
+  padding: 1rem;
+}
+.tasks-actions input[type="checkbox"]{
+  margin-right: 1rem;
+}
+.tasks-actions span{
+  cursor: default;
+}
+</style>
