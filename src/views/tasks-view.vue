@@ -1,5 +1,5 @@
 <template>
-  <div id="tasks-view" data-testid="tasks-show-tasks-view" v-show="isPanelVisible.tasks">
+  <div id="tasks-view" data-testid="tasks-show-tasks-view" v-show="isPanelVisible.tasks && permissions.view">
     <h2>Tasks</h2>
     <div class="tasks-list" v-for="task in tasks.topOpen " v-bind:key="task" v-bind:todo="task">
       <div class="task-name-description">
@@ -7,17 +7,17 @@
         <div class="task-description">{{ task.description }}</div>
       </div>
       <div class="tasks-actions">
-        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)">
-        <span data-testid="tasks-edit-task-button" @click="editTask(task)">&gt;</span>
+        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)" v-show="permissions.edit">
+        <span data-testid="tasks-edit-task-button" @click="editTask(task)" v-show="permissions.edit">&gt;</span>
       </div>
     </div>
     <div v-show="isMenuUnavailable">
-      <DxButton class="tasks-button" type="normal" text="Add Task" data-testid="tasks-show-tasks-add-button" @click="showAddView"/>
+      <DxButton class="tasks-button" type="normal" text="Add Task" data-testid="tasks-show-tasks-add-button" @click="showAddView" v-show="permissions.add"/>
       <DxButton class="tasks-button" type="normal" text="List Tasks" data-testid="tasks-show-tasks-list-button" @click="showListView"/>
     </div>
   </div>
 
-  <div id="task-add-view" data-testid="tasks-add-tasks-view" v-show="isPanelVisible.add">
+  <div id="task-add-view" data-testid="tasks-add-tasks-view" v-show="isPanelVisible.add && permissions.view">
     <h2>Add Task</h2>
     <div>
       <div class="label">Name:</div> <div><DxTextBox v-model:value="taskName" data-testid="tasks-add-name"/></div>
@@ -31,7 +31,7 @@
     </div>
   </div>
 
-  <div id="task-edit-view" data-testid="tasks-edit-tasks-view" v-show="isPanelVisible.edit">
+  <div id="task-edit-view" data-testid="tasks-edit-tasks-view" v-show="isPanelVisible.edit && permissions.view">
     <h2>Edit Task</h2>
     <div>
       <div class="label">Name:</div> <div><DxTextBox v-model:value="taskName" data-testid="tasks-edit-name"/></div>
@@ -44,7 +44,7 @@
     </div>
     <div class="tasks-buttons flex">
       <div class="delete">
-        <DxButton class="tasks-button" type="normal" text="Delete" data-testid="tasks-edit-task-delete-button" @click="deleteCurrentTask"/>
+        <DxButton class="tasks-button" type="normal" text="Delete" data-testid="tasks-edit-task-delete-button" @click="deleteCurrentTask" v-show="permissions.del"/>
       </div>
       <div class="cancel-save">
         <DxButton class="tasks-button" type="normal" text="Cancel" data-testid="tasks-edit-task-cancel-button" @click="showHomeView"/>
@@ -53,7 +53,7 @@
     </div>
   </div>
 
-  <div id="task-list-view" data-testid="tasks-list-tasks-view" v-show="isPanelVisible.list">
+  <div id="task-list-view" data-testid="tasks-list-tasks-view" v-show="isPanelVisible.list && permissions.view">
     <h2>Tasklist</h2>
     <h3>Open Tasks</h3>
     <div class="tasks-list" v-for="task in tasks.open " v-bind:key="task" v-bind:todo="task">
@@ -62,8 +62,8 @@
         <div class="task-description">{{ task.description }}</div>
       </div>
       <div class="tasks-actions">
-        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)">
-        <DxButton class="tasks-button" type="normal" text="Delete" data-testid="tasks-list-open-tasks-delete-button" @click="deleteTask(task)"/>
+        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)" v-show="permissions.edit">
+        <DxButton class="tasks-button" type="normal" text="Delete" data-testid="tasks-list-open-tasks-delete-button" @click="deleteTask(task)" v-show="permissions.del"/>
       </div>
     </div>
     <h3>Completed Tasks</h3>
@@ -73,8 +73,8 @@
         <div class="task-description">{{ task.description }}</div>
       </div>
       <div class="tasks-actions">
-        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)">
-        <DxButton class="tasks-button" type="normal" text="Delete" data-testid="tasks-list-open-tasks-delete-button" @click="deleteTask(task)"/>
+        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)" v-show="permissions.reopen">
+        <DxButton class="tasks-button" type="normal" text="Delete" data-testid="tasks-list-open-tasks-delete-button" @click="deleteTask(task)" v-show="permissions.del"/>
       </div>
     </div>
     <h3>Deleted Tasks</h3>
@@ -84,8 +84,8 @@
         <div class="task-description">{{ task.description }}</div>
       </div>
       <div class="tasks-actions">
-        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)">
-        <DxButton class="tasks-button" type="normal" text="Undelete" data-testid="tasks-list-deleted-tasks-undelete-button" @click="undeleteTask(task)"/>
+        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)" v-show="permissions.edit">
+        <DxButton class="tasks-button" type="normal" text="Undelete" data-testid="tasks-list-deleted-tasks-undelete-button" @click="undeleteTask(task)" v-show="permissions.undelete"/>
       </div>
     </div>
     <DxButton class="tasks-button" type="normal" text="Cancel" data-testid="tasks-list-tasks-cancel-button" @click="showHomeView"/>
@@ -109,6 +109,12 @@ export default {
 
   created() {
     this.currentCaseRecord = window.VUETASKS.config.currentCaseRecord;
+    this.permissions.view = window.VUETASKS.config.tasks_view || false;
+    this.permissions.add = window.VUETASKS.config.tasks_add || false;
+    this.permissions.edit = window.VUETASKS.config.tasks_edit || false;
+    this.permissions.del = window.VUETASKS.config.tasks_del || false;
+    this.permissions.reopen = window.VUETASKS.config.tasks_reopen || false;
+    this.permissions.undelete = window.VUETASKS.config.tasks_undelete || false;
 
     if (Object.keys(this.currentCaseRecord).length) {
       this.object = 'case'
@@ -156,7 +162,15 @@ export default {
       update: false,
       id: 0,
       maxOpenTasks: 3,
-      handler: null
+      handler: null,
+      permissions: {
+        view: false,
+        add: false,
+        edit: false,
+        del: false,
+        reopen: false,
+        undelete: false,
+      }
     }
   },
 

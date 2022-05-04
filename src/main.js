@@ -29,6 +29,13 @@ if ((window.location.href.indexOf("goboomtown.com") >= 0)) {
     window.VUETASKS.config = {};
     window.VUETASKS.config.serviceConfig = {};
     window.VUETASKS.config.currentCaseRecord = {};
+    window.VUETASKS.config.tasks_view = true;
+    window.VUETASKS.config.tasks_add = true;
+    window.VUETASKS.config.tasks_edit = true;
+    window.VUETASKS.config.tasks_del = true;
+    window.VUETASKS.config.tasks_reopen = true;
+    window.VUETASKS.config.tasks_undelete = true;
+
     app.mount('#app');
 }
 
