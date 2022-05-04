@@ -1,6 +1,8 @@
-import 'devextreme/dist/css/dx.common.css';
-import './themes/generated/theme.base.css';
-import './themes/generated/theme.additional.css';
+if(process.env.NODE_ENV !== "production") {
+    require('devextreme/dist/css/dx.common.css');
+    require('./themes/generated/theme.base.css');
+    require('./themes/generated/theme.additional.css');
+}
 import { createApp }  from "vue";
 // import router from "./router";
 
