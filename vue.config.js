@@ -1,14 +1,20 @@
 const { defineConfig } = require('@vue/cli-service')
+
+let cssExtract = false;
+if (process.env.NODE_ENV !== 'production') {
+  cssExtract = {
+    filename: '[name]-vue-tasks.css',
+    chunkFilename: '[name]-vue-tasks.css',
+  }
+}
+
 module.exports = defineConfig({
   publicPath: "/",
   assetsDir: './resources/scripts/vuetasks/',
   transpileDependencies: true,
   // css/[name].css
   css: {
-    extract: {
-      filename: '[name]-vue-tasks.css',
-      chunkFilename: '[name]-vue-tasks.css',
-    },
+    extract: cssExtract,
   },
   // js/[name].[contenthash:8].min.js
   configureWebpack: config => {
