@@ -421,14 +421,12 @@ h3 {
   text-align: left;
 }
 .cancel-save{
-  flex: 1;
 }
 .tasks-button{
   margin: 0 .5rem;
 }
 .tasks-list{
   display: flex;
-  width: 100%;
 }
 .task-name-description{
   flex: 1;
@@ -441,7 +439,6 @@ h3 {
   font-size: .8rem;
 }
 .tasks-actions{
-  flex: 1;
   align-items: center;
   text-align: right;
   padding: 1rem;
