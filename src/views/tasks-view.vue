@@ -18,6 +18,25 @@
     <h2 class="content-block">Add Task</h2>
     <div>Name: <input v-model="taskName" data-testid="tasks-add-name"></div>
     <div>Description: <input v-model="taskDescription" data-testid="tasks-add-description"></div>
+
+    <div>
+    <div>Team: {{ taskTeam }}</div>
+    <select v-model="taskTeam" @change="handleTeamChange">
+      <option v-for="team in teams" :value="team.team_id" v-bind:key="team">
+        {{ team.team_id }}
+      </option>
+    </select>
+    </div>
+
+    <div v-show="!isCaseOwner">
+    <div>User: {{ taskUser }}</div>
+    <select v-model="taskUser">
+      <option v-for="user in teamUsers" :value="user.id" v-bind:key="user">
+        {{ user.value }}
+      </option>
+    </select>
+    </div>
+
     <button data-testid="tasks-add-task-cancel-button" @click="showHomeView">Cancel</button>
     <button data-testid="tasks-add-task-save-button" @click="saveNewTask">Save</button>
   </div>
@@ -27,6 +46,25 @@
     <div>Name: <input v-model="taskName" data-testid="tasks-edit-name"></div>
     <div>Description: <input v-model="taskDescription" data-testid="tasks-edit-description"></div>
     <div>Completed: <input type="checkbox" id="edit-checkbox" data-testid="tasks-edit-complete-checkbox" v-model="completed"></div>
+
+    <div>
+      <div>Team: {{ taskTeam }}</div>
+      <select v-model="taskTeam" @change="handleTeamChange">
+        <option v-for="team in teams" :value="team.team_id" v-bind:key="team">
+          {{ team.team_id }}
+        </option>
+      </select>
+    </div>
+
+    <div v-show="!isCaseOwner">
+      <div>User: {{ taskUser }}</div>
+      <select v-model="taskUser">
+        <option v-for="user in teamUsers" :value="user.id" v-bind:key="user">
+          {{ user.value }}
+        </option>
+      </select>
+    </div>
+
     <button data-testid="tasks-edit-task-cancel-button" @click="showHomeView">Cancel</button>
     <button data-testid="tasks-edit-task-delete-button" @click="deleteCurrentTask">Delete</button>
     <button data-testid="tasks-edit-task-save-button" @click="saveTask">Save</button>
@@ -64,6 +102,7 @@
 
 <script>
 import axios from "axios";
+import { ref } from 'vue'
 
 const taskEngineUrl = 'https://us-central1-developer-playground-328319.cloudfunctions.net/service-tasks-engine';
 
@@ -75,12 +114,36 @@ export default {
     };
   },
 
-  created() {
-    this.currentCaseRecord = window.VUETASKS.config.currentCaseRecord;
 
-    if (Object.keys(this.currentCaseRecord).length) {
+  /*
+  Case:
+  owner_partners_teams_id: "A3C-VR6"
+  owner_users_id: "CY5"
+  c__owner_partner_team_name: "Boomtown"
+  c__owner_user_name: "Larry Borsato"
+
+  User:
+  teams_ids []
+  id
+  full_name
+  */
+
+  created() {
+    this.config = window.VUETASKS.config
+    this.currentCase = this.config.currentCaseRecord
+    this.currentUser = this.config.currentUser
+    this.partnersTeams = this.config.teams
+
+    this.partnersTeams.push({team_id: this.caseOwner})
+
+    this.setCaseOwner()
+
+    this.teams = ref(this.partnersTeams)
+    this.teamUsers = ref(this.getTeamUsers('TEAM'))
+    
+    if (Object.keys(this.currentCase).length) {
       this.object = 'case'
-      this.object_id = this.currentCaseRecord.get('id')
+      this.object_id = this.currentCase.get('id')
     }
   },
 
@@ -89,6 +152,8 @@ export default {
 
   data() {
     return {
+      config: [],
+      caseOwner: 'Case Owner',
       action: {
         completed: 'task-completed',
         reopened: 'task-reopened',
@@ -104,25 +169,39 @@ export default {
         deleted: [],
         topOpen: [],
       },
-      isMenuUnavailable: false,
+      partnersTeams: [],
+      teams: [],
+      teamUsers: [],
+      isMenuUnavailable: true,
       isPanelVisible: {
         tasks: false,
         add: false,
         edit: false,
         list: false,
       },
-      currentCaseRecord: null,
+      currentCase: null,
+      currentTeam: null,
+      currentUser: null,
       object: 'case',
       object_id: '20',
       currentIndex: 0,
       currentTask: null,
       taskName: '',
       taskDescription: '',
+      taskTeam: '',
+      taskUser: '',
       completed: false,
       update: false,
       id: 0,
       maxOpenTasks: 3,
-      handler: null
+      handler: null,
+      getTeamUsers: null,
+      owner: {
+        partners_teams_id: '',
+        users_id: '',
+        partner_team_name: '',
+        owner_user_name: ''
+      }
     }
   },
 
@@ -131,10 +210,35 @@ export default {
       this.handler = handler
     },
 
+    setGetTeamUsersFunction(getTeamUsers) {
+      this.getTeamUsers = getTeamUsers;
+    },
+
     sendEvent(event) {
       if ( this.handler ) {
         this.handler(event)
       }
+    },
+
+    setCaseOwner() {
+      this.owner.partners_teams_id = this.currentCase.owner_partners_teams_id
+      this.owner.users_id = this.currentCase.owner_users_id
+      this.owner.partner_team_name = this.currentCase.c__owner_partner_team_name
+      this.owner.owner_user_name = this.currentCase.c__owner_user_name
+    },
+
+    isCaseOwner() {
+      return this.taskTeam==this.caseOwner && this.taskUser.length===0;
+    },
+
+    arrayContains(haystack, needle) {
+      if ( !haystack || !needle ) {
+        return false
+      }
+      for (var j=0; j<haystack.length; j++) {
+        if (haystack[j].match(needle)) return true;
+      }
+      return false;
     },
 
     hidePanels() {
@@ -156,10 +260,15 @@ export default {
       return this.tasks.open.length > 0
     },
 
+    setTeamUserInfo() {
+      this.taskTeam = this.config.currentTeam.name
+      this.taskUser = this.config.currentUser.full_name
+    },
+
     showAddView() {
-      this.clearTaskFields()
-      this.hidePanels()
-      this.isPanelVisible.add = true
+      console.log(this.getTeamUsers('Boomtown'));
+      console.log(this.config.currentUser.full_name);
+      this.addTask()
     },
 
     showListView() {
@@ -169,13 +278,21 @@ export default {
 
     addTask() {
       this.clearTaskFields()
+      this.teams = ref(this.partnersTeams)
+      this.teamUsers = ref(this.getTeamUsers('TEAM'))
       this.hidePanels()
       this.isPanelVisible.add = true
+    },
+
+    handleTeamChange() {
+      this.teamUsers = ref(this.getTeamUsers('TEAM'))
     },
 
     clearTaskFields() {
       this.taskName = ''
       this.taskDescription = ''
+      this.taskTeam = this.caseOwner
+      this.taskUser = ''
       this.completed = false
     },
 
@@ -229,6 +346,7 @@ export default {
       this.taskName = task.name
       this.taskDescription = task.description
       this.completed = task.completed
+      this.setTeamUserInfo();
     },
 
     deleteCurrentTask() {

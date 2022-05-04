@@ -28,6 +28,10 @@ export default {
       this.$refs.tasksView.setEventHandler(handler)
     },
 
+    setGetTeamUsersFunction(fn) {
+      this.$refs.tasksView.setGetTeamUsersFunction(fn)
+    },
+
     showAddView() {
       this.$refs.tasksView.showAddView()
     },
