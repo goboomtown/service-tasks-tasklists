@@ -97,37 +97,14 @@ import { Options, Vue } from 'vue-class-component';
 import axios from "axios";
 import DxButton from 'devextreme-vue/button';
 import DxTextBox from 'devextreme-vue/text-box';
-
-interface Task {
-  ID: number,
-  name: string,
-  description: string,
-  completed: boolean,
-  deleted: boolean
-}
+import { Task } from '../interfaces/task'
+import { TaskAction } from '../interfaces/task-action'
+import { Permissions } from '../interfaces/permissions'
 
 interface Event {
   action: string,
   task: Task,
   date: string,
-}
-
-interface Permissions {
-    view: boolean,
-    add: boolean,
-    edit: boolean,
-    del: boolean,
-    reopen: boolean,
-    undelete: boolean,
-}
-
-interface Action {
-    completed: string,
-    reopened: string,
-    added: string,
-    edited: string,
-    deleted: string,
-    undeleted: string
 }
 
 interface Tasks {
@@ -146,8 +123,8 @@ interface Visibility {
 }
 
 interface State {
-  config: Array<any>,
-  action: Action,
+  config: any,
+  action: TaskAction,
   permissions: Permissions,
   tasks: Tasks,
   isPanelVisible: Visibility,
@@ -175,7 +152,7 @@ interface State {
 
   data: (): State => {
     return {
-      config: [],
+      config: {},
       action: {
         completed: 'task-completed',
         reopened: 'task-reopened',
@@ -222,18 +199,20 @@ interface State {
   },
 
   created() {
-    this.config = window.VUETASKS.config;
-    this.currentCaseRecord = this.config.currentCaseRecord;
-    this.permissions.view = this.config.tasks_view || false;
-    this.permissions.add = this.config.tasks_add || false;
-    this.permissions.edit = this.config.tasks_edit || false;
-    this.permissions.del = this.config.tasks_del || false;
-    this.permissions.reopen = this.config.tasks_reopen || false;
-    this.permissions.undelete = this.config.tasks_undelete || false;
+    if ( window.VUETASKS && window.VUETASKS.config ) {
+      this.config = window.VUETASKS.config;
+      this.currentCaseRecord = this.config.currentCaseRecord;
+      this.permissions.view = this.config.tasks_view || false;
+      this.permissions.add = this.config.tasks_add || false;
+      this.permissions.edit = this.config.tasks_edit || false;
+      this.permissions.del = this.config.tasks_del || false;
+      this.permissions.reopen = this.config.tasks_reopen || false;
+      this.permissions.undelete = this.config.tasks_undelete || false;
 
-    if (Object.keys(this.currentCaseRecord).length) {
-      this.object = 'case'
-      this.object_id = this.currentCaseRecord.get('id')
+      if (Object.keys(this.currentCaseRecord).length) {
+        this.object = 'case'
+        this.object_id = this.currentCaseRecord.get('id')
+      }
     }
   },
 

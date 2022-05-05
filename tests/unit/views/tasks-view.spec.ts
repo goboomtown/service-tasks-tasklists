@@ -20,8 +20,8 @@ describe('tasks-view.vue', () => {
         expect(wrapper.findComponent('[data-testid="tasks-complete-checkbox"]').exists())
     })
 
-    test('can you show tasks view', async () => {
-        wrapper.vm.showHomeView()
-        expect(wrapper.showTasksView).toBe(true)
+    test('can you show add view', async () => {
+        wrapper.vm.showAddView()
+        expect(wrapper.isPanelVisible.add).toBe(true)
     })
 })
