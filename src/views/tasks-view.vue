@@ -98,8 +98,6 @@ import axios from "axios";
 import DxButton from 'devextreme-vue/button';
 import DxTextBox from 'devextreme-vue/text-box';
 
-const taskEngineUrl = 'https://us-central1-developer-playground-328319.cloudfunctions.net/service-tasks-engine';
-
 interface Task {
   ID: number,
   name: string,
@@ -114,36 +112,70 @@ interface Event {
   date: string,
 }
 
+interface Permissions {
+    view: boolean,
+    add: boolean,
+    edit: boolean,
+    del: boolean,
+    reopen: boolean,
+    undelete: boolean,
+}
+
+interface Action {
+    completed: string,
+    reopened: string,
+    added: string,
+    edited: string,
+    deleted: string,
+    undeleted: string
+}
+
+interface Tasks {
+  all: Array<Task>,
+  open: Array<Task>,
+  completed: Array<Task>,
+  deleted: Array<Task>,
+  topOpen: Array<Task>,
+}
+
+interface Visibility {
+  tasks: boolean,
+  add: boolean,
+  edit: boolean,
+  list: boolean,
+}
+
+interface State {
+  config: Array<any>,
+  action: Action,
+  permissions: Permissions,
+  tasks: Tasks,
+  isPanelVisible: Visibility,
+  currentCaseRecord: any,
+  object: string,
+  object_id: string,
+  currentIndex: number,
+  currentTask: any,
+  taskName: string,
+  taskDescription: string,
+  completed: boolean,
+  update: boolean,
+  id: number,
+  maxOpenTasks: number,
+  handler: any,
+  isMenuUnavailable: boolean,
+}
+
+
 @Options({
   setup() {
     return {
     };
   },
 
-  created() {
-    this.context = window.VUETASKS.config;
-    this.currentCaseRecord = this.context.currentCaseRecord;
-    this.permissions.view = this.context.tasks_view || false;
-    this.permissions.add = this.context.tasks_add || false;
-    this.permissions.edit = this.context.tasks_edit || false;
-    this.permissions.del = this.context.tasks_del || false;
-    this.permissions.reopen = this.context.tasks_reopen || false;
-    this.permissions.undelete = this.context.tasks_undelete || false;
-
-    if (Object.keys(this.currentCaseRecord).length) {
-      this.object = 'case'
-      this.object_id = this.currentCaseRecord.get('id')
-    }
-  },
-
-  components: {
-    DxButton,
-    DxTextBox
-  },
-
-  data() {
+  data: (): State => {
     return {
-      context: [],
+      config: [],
       action: {
         completed: 'task-completed',
         reopened: 'task-reopened',
@@ -187,6 +219,27 @@ interface Event {
         undelete: false,
       }
     }
+  },
+
+  created() {
+    this.config = window.VUETASKS.config;
+    this.currentCaseRecord = this.config.currentCaseRecord;
+    this.permissions.view = this.config.tasks_view || false;
+    this.permissions.add = this.config.tasks_add || false;
+    this.permissions.edit = this.config.tasks_edit || false;
+    this.permissions.del = this.config.tasks_del || false;
+    this.permissions.reopen = this.config.tasks_reopen || false;
+    this.permissions.undelete = this.config.tasks_undelete || false;
+
+    if (Object.keys(this.currentCaseRecord).length) {
+      this.object = 'case'
+      this.object_id = this.currentCaseRecord.get('id')
+    }
+  },
+
+  components: {
+    DxButton,
+    DxTextBox
   },
 
   methods: {
@@ -246,7 +299,7 @@ interface Event {
       if ( !this.validateRequiredFields() ) {
         return
       }
-      const task = this.buildTaskFromFormFields()
+      let task = this.buildTaskFromFormFields()
       this.tasks.all.push(task)
       this.sendEvent({
         action: this.action.added,
@@ -271,11 +324,17 @@ interface Event {
       this.showHomeView()
     },
 
-    buildTaskFromFormFields() {
-      return { name: this.taskName, description: this.taskDescription, completed: this.completed, deleted: false }
+    buildTaskFromFormFields(): Task {
+      return {
+        ID: this.tasks.all.length,
+        name: this.taskName,
+        description: this.taskDescription,
+        completed: this.completed,
+        deleted: false
+      }
     },
 
-    validateRequiredFields() {
+    validateRequiredFields(): boolean {
       return this.taskName.length>0
     },
 
@@ -348,15 +407,16 @@ interface Event {
       this.tasks.topOpen = []
     },
 
-    getUrl() {
+    getUrl(): string {
+      let taskEngineUrl = 'https://us-central1-developer-playground-328319.cloudfunctions.net/service-tasks-engine'
       return taskEngineUrl + '/' + this.object + '/' + this.object_id + '/default'
     },
 
     async getTasks() {
       try {
-        const url = this.getUrl()
-        const response = await axios.get(url)
-        const tasks = response.data.tasks
+        let url = this.getUrl()
+        let response = await axios.get(url)
+        let tasks = response.data.tasks
         if ( tasks ) {
           this.update = true
           this.clearTasks()
@@ -377,10 +437,10 @@ interface Event {
 
     async saveTasks() {
       try {
-        const url = this.getUrl()
-        const tasks = { tasks: this.tasks.all }
-        const tasksJSON = JSON.stringify(tasks)
-        const config = { headers: { 'Content-Type': 'text/plain' } }
+        let url = this.getUrl()
+        let tasks = { tasks: this.tasks.all }
+        let tasksJSON = JSON.stringify(tasks)
+        let config = { headers: { 'Content-Type': 'text/plain' } }
         this.update ? await axios.put(url, tasksJSON, config) : await axios.post(url, tasksJSON, config);
         this.getTasks()
       } catch (err) {

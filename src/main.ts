@@ -9,7 +9,7 @@ import { createApp }  from "vue";
 import App from "./AppTasks.vue";
 import appInfo from "./app-info";
 
-const app = createApp(App, { componentKey: 0 });
+const app = createApp(App, {} );
 
 app.config.globalProperties.$appInfo = appInfo;
 
