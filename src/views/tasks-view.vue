@@ -92,29 +92,43 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { Options, Vue } from 'vue-class-component';
 import axios from "axios";
 import DxButton from 'devextreme-vue/button';
 import DxTextBox from 'devextreme-vue/text-box';
 
 const taskEngineUrl = 'https://us-central1-developer-playground-328319.cloudfunctions.net/service-tasks-engine';
 
-export default {
-  name: "TasksView",
-  
+interface Task {
+  ID: number,
+  name: string,
+  description: string,
+  completed: boolean,
+  deleted: boolean
+}
+
+interface Event {
+  action: string,
+  task: Task,
+  date: string,
+}
+
+@Options({
   setup() {
     return {
     };
   },
 
   created() {
-    this.currentCaseRecord = window.VUETASKS.config.currentCaseRecord;
-    this.permissions.view = window.VUETASKS.config.tasks_view || false;
-    this.permissions.add = window.VUETASKS.config.tasks_add || false;
-    this.permissions.edit = window.VUETASKS.config.tasks_edit || false;
-    this.permissions.del = window.VUETASKS.config.tasks_del || false;
-    this.permissions.reopen = window.VUETASKS.config.tasks_reopen || false;
-    this.permissions.undelete = window.VUETASKS.config.tasks_undelete || false;
+    this.context = window.VUETASKS.config;
+    this.currentCaseRecord = this.context.currentCaseRecord;
+    this.permissions.view = this.context.tasks_view || false;
+    this.permissions.add = this.context.tasks_add || false;
+    this.permissions.edit = this.context.tasks_edit || false;
+    this.permissions.del = this.context.tasks_del || false;
+    this.permissions.reopen = this.context.tasks_reopen || false;
+    this.permissions.undelete = this.context.tasks_undelete || false;
 
     if (Object.keys(this.currentCaseRecord).length) {
       this.object = 'case'
@@ -129,6 +143,7 @@ export default {
 
   data() {
     return {
+      context: [],
       action: {
         completed: 'task-completed',
         reopened: 'task-reopened',
@@ -175,11 +190,11 @@ export default {
   },
 
   methods: {
-    setEventHandler(handler) {
+    setEventHandler(handler: any) {
       this.handler = handler
     },
 
-    sendEvent(event) {
+    sendEvent(event: Event) {
       if ( this.handler ) {
         this.handler(event)
       }
@@ -269,7 +284,7 @@ export default {
       this.isPanelVisible.list = true
     },
     
-    editTask(task) {
+    editTask(task: Task) {
       this.hidePanels()
       this.isPanelVisible.edit = true
       this.currentTask = task
@@ -293,7 +308,7 @@ export default {
       this.showHomeView()
     },
 
-    deleteTask(task) {
+    deleteTask(task: Task) {
       this.tasks.all.at(task.ID).deleted = true
       this.sendEvent({
         action: this.action.deleted,
@@ -303,7 +318,7 @@ export default {
       this.saveTasks()
     },
 
-    undeleteTask(task) {
+    undeleteTask(task: Task) {
       this.tasks.all.at(task.ID).deleted = false
       this.sendEvent({
         action: this.action.undeleted,
@@ -313,7 +328,7 @@ export default {
       this.saveTasks()
     },
 
-    completeTask(task, event) {
+    completeTask(task: Task, event: any) {
       task.completed = event.target.checked
       this.sendEvent({
         action: event.target.checked?this.action.completed:this.action.reopened,
@@ -363,8 +378,7 @@ export default {
     async saveTasks() {
       try {
         const url = this.getUrl()
-        const tasks = new Object()
-        tasks.tasks = this.tasks.all
+        const tasks = { tasks: this.tasks.all }
         const tasksJSON = JSON.stringify(tasks)
         const config = { headers: { 'Content-Type': 'text/plain' } }
         this.update ? await axios.put(url, tasksJSON, config) : await axios.post(url, tasksJSON, config);
@@ -374,7 +388,7 @@ export default {
       }
     },
 
-    handleServerError(error) {
+    handleServerError(error: any) {
       if (error.response) {
         // client received an error response (5xx, 4xx)
         console.log("Server Error:", error)
@@ -386,7 +400,7 @@ export default {
       }
     },
 
-    organizeTasks(task) {
+    organizeTasks(task: Task) {
       task.ID = this.id++
       if ( task.deleted ) {
         this.tasks.deleted.push(task)
@@ -405,8 +419,10 @@ export default {
     this.getTasks();
   },
 
-};
+})
+export default class TasksView extends Vue {}
 </script>
+
 <style scoped>
 div{
   color: #4F4F4F;

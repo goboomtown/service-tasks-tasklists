@@ -6,25 +6,24 @@
   </div>
 </template>
 
-<script>
-// import HomeScreen from './components/HomeScreen.vue'
+
+<script lang="ts">
+import { Options, Vue } from 'vue-class-component';
 import TasksView from './views/tasks-view.vue'
 
-export default {
-  name: 'App',
-
+@Options({
   components: {
     TasksView
   },
 
   computed: {
-    getTasksView() {
+    getTasksView(): any {
       return this.$refs['tasksView'].instance;
     },
   },
 
   methods: {
-    setEventHandler(handler) {
+    setEventHandler(handler: any) {
       this.$refs.tasksView.setEventHandler(handler)
     },
 
@@ -48,7 +47,8 @@ export default {
     }
   },
 
-}
+})
+export default class App extends Vue {}
 
 </script>
 
@@ -75,3 +75,5 @@ body {
   display: flex;
 }
 </style>
+
+
