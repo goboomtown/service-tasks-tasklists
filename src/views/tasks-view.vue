@@ -4,7 +4,7 @@
     <div class="tasks-list" v-for="task in tasks.topOpen " v-bind:key="task" v-bind:todo="task">
       <div class="task-name-description">
         <div class="task-name">{{ task.name }}</div>
-        <div class="task-description">{{ task.description }}</div>
+        <div class="task-description">{{ formatDate(task.due_datetime) }}</div>
       </div>
       <div class="tasks-actions">
         <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)" v-show="permissions.edit">
@@ -23,7 +23,10 @@
       <div class="label">Name:</div> <div><DxTextBox v-model:value="taskName" data-testid="tasks-add-name"/></div>
     </div>
     <div>
-      <div class="label">Description:</div> <div><DxTextBox v-model:value="taskDescription" data-testid="tasks-add-description"/></div>
+      <div class="label">Description:</div> <div><DxTextBox v-model:value="taskDescription" data-testid="tasks-add-description" :min="dateBoxConfigs.minDate"/></div>
+    </div>
+    <div>
+      <div class="label">Due Date:</div> <div><DxDateBox v-model:value="taskDueDatetime" type="datetime" data-testid="tasks-add-due-datetime" :min="dateBoxConfigs.minDate"/></div>
     </div>
     <div class="tasks-buttons">
       <DxButton class="tasks-button" type="normal" text="Cancel" data-testid="tasks-add-task-cancel-button" @click="showHomeView"/>
@@ -38,6 +41,9 @@
     </div>
     <div>
       <div class="label">Description:</div> <div><DxTextBox v-model:value="taskDescription" data-testid="tasks-edit-description"/></div>
+    </div>
+    <div>
+      <div class="label">Due Date:</div> <div><DxDateBox v-model:value="taskDueDatetime" type="datetime" data-testid="tasks-add-due-datetime" :min="dateBoxConfigs.minDate"/></div>
     </div>
     <div>
       <div class="label">Completed: <input type="checkbox" id="edit-checkbox" data-testid="tasks-edit-complete-checkbox" v-model="completed"></div>
@@ -59,7 +65,7 @@
     <div class="tasks-list" v-for="task in tasks.open " v-bind:key="task" v-bind:todo="task">
       <div class="task-name-description">
         <div class="task-name">{{ task.name }}</div>
-        <div class="task-description">{{ task.description }}</div>
+        <div class="task-description">{{ formatDate(task.due_datetime) }}</div>
       </div>
       <div class="tasks-actions">
         <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)" v-show="permissions.edit">
@@ -70,7 +76,7 @@
     <div class="tasks-list" v-for="task in tasks.completed " v-bind:key="task" v-bind:todo="task">
       <div class="task-name-description">
         <div class="task-name">{{ task.name }}</div>
-        <div class="task-description">{{ task.description }}</div>
+        <div class="task-description">{{ formatDate(task.due_datetime) }}</div>
       </div>
       <div class="tasks-actions">
         <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)" v-show="permissions.reopen">
@@ -81,7 +87,7 @@
     <div class="tasks-list" v-for="task in tasks.deleted " v-bind:key="task" v-bind:todo="task">
       <div class="task-name-description">
         <div class="task-name">{{ task.name }}</div>
-        <div class="task-description">{{ task.description }}</div>
+        <div class="task-description">{{ formatDate(task.due_datetime) }}</div>
       </div>
       <div class="tasks-actions">
         <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)" v-show="permissions.edit">
@@ -96,10 +102,15 @@
 import { Options, Vue } from 'vue-class-component';
 import axios from "axios";
 import DxButton from 'devextreme-vue/button';
+import DxDateBox from 'devextreme-vue/date-box';
 import DxTextBox from 'devextreme-vue/text-box';
-import { Task } from '../interfaces/task'
-import { TaskAction } from '../interfaces/task-action'
-import { Permissions } from '../interfaces/permissions'
+import { Task } from '../interfaces/task';
+import { TaskAction } from '../interfaces/task-action';
+import { Permissions } from '../interfaces/permissions';
+
+interface DateBoxConfigs {
+  minDate: Date
+}
 
 interface Event {
   action: string,
@@ -123,6 +134,7 @@ interface Visibility {
 }
 
 interface State {
+  dateBoxConfigs: DateBoxConfigs
   config: any,
   action: TaskAction,
   permissions: Permissions,
@@ -135,6 +147,7 @@ interface State {
   currentTask: any,
   taskName: string,
   taskDescription: string,
+  taskDueDatetime: any,
   completed: boolean,
   update: boolean,
   id: number,
@@ -143,7 +156,6 @@ interface State {
   isMenuUnavailable: boolean,
 }
 
-
 @Options({
   setup() {
     return {
@@ -151,7 +163,13 @@ interface State {
   },
 
   data: (): State => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+
     return {
+      dateBoxConfigs: {
+        minDate: today,
+      },
       config: {},
       action: {
         completed: 'task-completed',
@@ -182,6 +200,7 @@ interface State {
       currentTask: null,
       taskName: '',
       taskDescription: '',
+      taskDueDatetime: null,
       completed: false,
       update: false,
       id: 0,
@@ -218,10 +237,37 @@ interface State {
 
   components: {
     DxButton,
+    DxDateBox,
     DxTextBox
   },
 
   methods: {
+    isDateObject(date: any): boolean {
+      return (date !== null && date.constructor.toString().indexOf('Date') > -1);
+    },
+
+    isDateString(date: any): boolean {
+      return (date !== null && (new Date(date)).toString() !== 'Invalid Date') && !isNaN((new Date(date)).getTime());
+    },
+
+    zeroPad(num: number, places: number): string {
+      return String(num).padStart(places, '0');
+    },
+
+    formatDate(value: any): any {
+      if (this.isDateString(value)) {
+        const date = new Date(value);
+        const month = this.zeroPad(date.getMonth() + 1, 2);
+        const day = this.zeroPad(date.getDate(), 2);
+        const hour = this.zeroPad(date.getHours(), 2);
+        const minutes = this.zeroPad(date.getMinutes(), 2);
+
+        return `${month}/${day}/${date.getFullYear()} ${hour}:${minutes}`;
+      }
+
+      return null;
+    },
+
     setEventHandler(handler: any) {
       this.handler = handler
     },
@@ -271,6 +317,7 @@ interface State {
     clearTaskFields() {
       this.taskName = ''
       this.taskDescription = ''
+      this.taskDueDatetime = null;
       this.completed = false
     },
 
@@ -304,10 +351,13 @@ interface State {
     },
 
     buildTaskFromFormFields(): Task {
+      const dueDatetime = this.isDateObject(this.taskDueDatetime) ? this.taskDueDatetime.toISOString() : null;
+
       return {
         ID: this.tasks.all.length,
         name: this.taskName,
         description: this.taskDescription,
+        due_datetime: dueDatetime,
         completed: this.completed,
         deleted: false
       }
@@ -329,6 +379,7 @@ interface State {
       this.currentIndex = task.ID
       this.taskName = task.name
       this.taskDescription = task.description
+      this.taskDueDatetime = this.isDateString(task.due_datetime) ? new Date(String(task.due_datetime)) : null;
       this.completed = task.completed
     },
 
@@ -387,8 +438,9 @@ interface State {
     },
 
     getUrl(): string {
-      let taskEngineUrl = 'https://us-central1-developer-playground-328319.cloudfunctions.net/service-tasks-engine'
-      return taskEngineUrl + '/' + this.object + '/' + this.object_id + '/default'
+      const taskEngineUrl = 'https://us-central1-developer-playground-328319.cloudfunctions.net/service-tasks-engine';
+
+      return `${taskEngineUrl}/${this.object}/${this.object_id}/default`;
     },
 
     async getTasks() {
@@ -496,6 +548,9 @@ h3 {
 }
 .tasks-list{
   display: flex;
+}
+.tasks-list:hover {
+  background-color: #e1e4ea;
 }
 .task-name-description{
   flex: 1;
