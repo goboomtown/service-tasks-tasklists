@@ -4,9 +4,10 @@ import { Task } from '../interfaces/task'
 
 const taskEngineUrl = 'https://us-central1-developer-playground-328319.cloudfunctions.net/service-tasks-engine'
 const maxOpenTasks = 3
+
 interface State {
     tasks: [Task],
-    newTask: Task,
+    newTask?: Task,
     currentCase: any
 }
 
@@ -14,7 +15,8 @@ export default createStore({
     state: {
         tasks: [],
         newTask: null,
-        currentCase: ''
+        currentCase: '',
+        url: ''
     },
     getters: {
         newTask: state => state.newTask,
@@ -37,17 +39,18 @@ export default createStore({
         ADD_TASK (state, task) {
             // state.tasks.push(task)
         },
-        CLEAR_NEW_TODO (state) {
+        CLEAR_NEW_TASK (state) {
             // state.newTask = newTask
         },
         SET_CASE (state, currentCase) {
             state.currentCase = currentCase
+            state.url = taskEngineUrl + '/case/' + currentCase.id + '/default'
         },
     },
     actions: {
         fetchTasks ({ commit }) {
             axios
-                .get(taskEngineUrl +'/case/20/default')
+                .get(this.state.url)
                 .then(r => r.data)
                 .then(tasks => {
                     commit('SET_TASKS', tasks.tasks)
@@ -59,7 +62,7 @@ export default createStore({
                 return
             }
             const task = {
-                title: state.newTask,
+                name: state.newTask,
                 completed: false,
             }
             axios.post(taskEngineUrl+'/todos', task).then(_ => {

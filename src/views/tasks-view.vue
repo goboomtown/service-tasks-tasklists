@@ -189,10 +189,12 @@ interface State {
   },
 
   created() {
+    this.$store.commit('SET_CASE', {id: 20})
     this.fetchTasks()
     if ( !this.isPanelVisible.list ) {
       this.showHomeView()
     }
+
 
     if ( window.VUETASKS && window.VUETASKS.config ) {
       this.config = window.VUETASKS.config;
@@ -208,7 +210,15 @@ interface State {
         this.object = 'case'
         this.object_id = this.currentCaseRecord.get('id')
       }
+      this.$store.commit('SET_CASE', this.currentCaseRecord)
+    } else {
+      this.$store.commit('SET_CASE', {id: 20})
     }
+    this.fetchTasks()
+    if ( !this.isPanelVisible.list ) {
+      this.showHomeView()
+    }
+
   },
 
   components: {
@@ -217,15 +227,6 @@ interface State {
   },
 
   computed: {
-    // openTasks () {
-    //   let tasks = this.$store.getters.openTasks
-    //   console.log(tasks)
-    //   return tasks
-    // },
-    // topOpenTasks () {
-    //   let tasks = this.$store.getters.maxOpenTasks
-    //   return tasks
-    // }
   },
 
   methods: {
