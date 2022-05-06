@@ -9,7 +9,9 @@ import { createApp }  from "vue";
 import App from "./AppTasks.vue";
 import appInfo from "./app-info";
 
-const app = createApp(App, {} );
+import store from './store'
+
+const app = createApp(App, {} ).use(store);
 
 app.config.globalProperties.$appInfo = appInfo;
 

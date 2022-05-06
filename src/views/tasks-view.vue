@@ -1,7 +1,7 @@
 <template>
   <div id="tasks-view" data-testid="tasks-show-tasks-view" v-show="isPanelVisible.tasks && permissions.view">
     <h2>Tasks</h2>
-    <div class="tasks-list" v-for="task in tasks.topOpen " v-bind:key="task" v-bind:todo="task">
+    <div class="tasks-list" v-for="task in $store.getters.topOpenTasks" v-bind:key="task" v-bind:todo="task">
       <div class="task-name-description">
         <div class="task-name">{{ task.name }}</div>
         <div class="task-description">{{ task.description }}</div>
@@ -56,7 +56,7 @@
   <div id="task-list-view" data-testid="tasks-list-tasks-view" v-show="isPanelVisible.list && permissions.view">
     <h2>Tasklist</h2>
     <h3>Open Tasks</h3>
-    <div class="tasks-list" v-for="task in tasks.open " v-bind:key="task" v-bind:todo="task">
+    <div class="tasks-list" v-for="task in $store.getters.openTasks" v-bind:key="task" v-bind:todo="task">
       <div class="task-name-description">
         <div class="task-name">{{ task.name }}</div>
         <div class="task-description">{{ task.description }}</div>
@@ -67,7 +67,7 @@
       </div>
     </div>
     <h3>Completed Tasks</h3>
-    <div class="tasks-list" v-for="task in tasks.completed " v-bind:key="task" v-bind:todo="task">
+    <div class="tasks-list" v-for="task in $store.getters.completedTasks" v-bind:key="task" v-bind:todo="task">
       <div class="task-name-description">
         <div class="task-name">{{ task.name }}</div>
         <div class="task-description">{{ task.description }}</div>
@@ -77,23 +77,13 @@
         <DxButton class="tasks-button" type="normal" text="Delete" data-testid="tasks-list-open-tasks-delete-button" @click="deleteTask(task)" v-show="permissions.del"/>
       </div>
     </div>
-    <h3>Deleted Tasks</h3>
-    <div class="tasks-list" v-for="task in tasks.deleted " v-bind:key="task" v-bind:todo="task">
-      <div class="task-name-description">
-        <div class="task-name">{{ task.name }}</div>
-        <div class="task-description">{{ task.description }}</div>
-      </div>
-      <div class="tasks-actions">
-        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)" v-show="permissions.edit">
-        <DxButton class="tasks-button" type="normal" text="Undelete" data-testid="tasks-list-deleted-tasks-undelete-button" @click="undeleteTask(task)" v-show="permissions.undelete"/>
-      </div>
-    </div>
     <DxButton class="tasks-button" type="normal" text="Cancel" data-testid="tasks-list-tasks-cancel-button" @click="showHomeView"/>
   </div>
 </template>
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
+
 import axios from "axios";
 import DxButton from 'devextreme-vue/button';
 import DxTextBox from 'devextreme-vue/text-box';
@@ -123,12 +113,12 @@ interface Visibility {
 }
 
 interface State {
-  config: any,
+  config?: any,
   action: TaskAction,
   permissions: Permissions,
   tasks: Tasks,
   isPanelVisible: Visibility,
-  currentCaseRecord: any,
+  currentCaseRecord?: any,
   object: string,
   object_id: string,
   currentIndex: number,
@@ -168,7 +158,7 @@ interface State {
         deleted: [],
         topOpen: [],
       },
-      isMenuUnavailable: false,
+      isMenuUnavailable: true,
       isPanelVisible: {
         tasks: false,
         add: false,
@@ -199,6 +189,11 @@ interface State {
   },
 
   created() {
+    this.fetchTasks()
+    if ( !this.isPanelVisible.list ) {
+      this.showHomeView()
+    }
+
     if ( window.VUETASKS && window.VUETASKS.config ) {
       this.config = window.VUETASKS.config;
       this.currentCaseRecord = this.config.currentCaseRecord;
@@ -221,6 +216,18 @@ interface State {
     DxTextBox
   },
 
+  computed: {
+    // openTasks () {
+    //   let tasks = this.$store.getters.openTasks
+    //   console.log(tasks)
+    //   return tasks
+    // },
+    // topOpenTasks () {
+    //   let tasks = this.$store.getters.maxOpenTasks
+    //   return tasks
+    // }
+  },
+
   methods: {
     setEventHandler(handler: any) {
       this.handler = handler
@@ -241,14 +248,14 @@ interface State {
 
     showHomeView() {
       this.hidePanels()
-      console.log(this.tasks.open)
       if ( this.hasOpenTasks() || this.isMenuUnavailable ) {
+        // this.tasks.topOpen = this.openTasks
         this.isPanelVisible.tasks = true
       }
     },
 
     hasOpenTasks() {
-      return this.tasks.open.length > 0
+      return this.$store.getters.openTasks.length > 0
     },
 
     showAddView() {
@@ -391,6 +398,10 @@ interface State {
       return taskEngineUrl + '/' + this.object + '/' + this.object_id + '/default'
     },
 
+    async fetchTasks() {
+      this.$store.dispatch('fetchTasks')
+    },
+
     async getTasks() {
       try {
         let url = this.getUrl()
@@ -455,7 +466,8 @@ interface State {
   },
 
   mounted() {
-    this.getTasks();
+    // this.getTasks();
+    // store.dispatch("fetchUsers");
   },
 
 })
