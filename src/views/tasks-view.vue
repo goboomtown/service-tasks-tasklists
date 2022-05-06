@@ -549,6 +549,9 @@ h3 {
 .tasks-list{
   display: flex;
 }
+.tasks-list:hover {
+  background-color: #e1e4ea;
+}
 .task-name-description{
   flex: 1;
 }
