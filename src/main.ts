@@ -13,6 +13,8 @@ import store from './store'
 
 const app = createApp(App, {} ).use(store);
 
+app.use(store);
+
 app.config.globalProperties.$appInfo = appInfo;
 
 if ((window.location.href.indexOf("goboomtown.com") >= 0)) {
@@ -28,7 +30,7 @@ if ((window.location.href.indexOf("goboomtown.com") >= 0)) {
     window.VUETASKS = {};
     window.VUETASKS.config = {};
     window.VUETASKS.config.serviceConfig = {};
-    window.VUETASKS.config.currentCaseRecord = {};
+    // window.VUETASKS.config.currentCaseRecord = {};
     window.VUETASKS.config.tasks_view = true;
     window.VUETASKS.config.tasks_add = true;
     window.VUETASKS.config.tasks_edit = true;

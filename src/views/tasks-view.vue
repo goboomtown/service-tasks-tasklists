@@ -1,7 +1,7 @@
 <template>
   <div id="tasks-view" data-testid="tasks-show-tasks-view" v-show="isPanelVisible.tasks && permissions.view">
     <h2>Tasks</h2>
-    <div class="tasks-list" v-for="task in $store.getters.topOpenTasks" v-bind:key="task" v-bind:todo="task">
+    <div class="tasks-list" v-for="task in $store.getters['tasks/topOpenTasks']" v-bind:key="task" v-bind:todo="task">
       <div class="task-name-description">
         <div class="task-name">{{ task.name }}</div>
         <div class="task-description">{{ task.description }}</div>
@@ -56,7 +56,7 @@
   <div id="task-list-view" data-testid="tasks-list-tasks-view" v-show="isPanelVisible.list && permissions.view">
     <h2>Tasklist</h2>
     <h3>Open Tasks</h3>
-    <div class="tasks-list" v-for="task in $store.getters.openTasks" v-bind:key="task" v-bind:todo="task">
+    <div class="tasks-list" v-for="task in $store.getters['tasks/openTasks']" v-bind:key="task" v-bind:todo="task">
       <div class="task-name-description">
         <div class="task-name">{{ task.name }}</div>
         <div class="task-description">{{ task.description }}</div>
@@ -67,7 +67,7 @@
       </div>
     </div>
     <h3>Completed Tasks</h3>
-    <div class="tasks-list" v-for="task in $store.getters.completedTasks" v-bind:key="task" v-bind:todo="task">
+    <div class="tasks-list" v-for="task in $store.getters['tasks/completedTasks']" v-bind:key="task" v-bind:todo="task">
       <div class="task-name-description">
         <div class="task-name">{{ task.name }}</div>
         <div class="task-description">{{ task.description }}</div>
@@ -189,16 +189,8 @@ interface State {
   },
 
   created() {
-    this.$store.commit('SET_CASE', {id: 20})
-    this.fetchTasks()
-    if ( !this.isPanelVisible.list ) {
-      this.showHomeView()
-    }
-
-
     if ( window.VUETASKS && window.VUETASKS.config ) {
       this.config = window.VUETASKS.config;
-      this.currentCaseRecord = this.config.currentCaseRecord;
       this.permissions.view = this.config.tasks_view || false;
       this.permissions.add = this.config.tasks_add || false;
       this.permissions.edit = this.config.tasks_edit || false;
@@ -206,15 +198,18 @@ interface State {
       this.permissions.reopen = this.config.tasks_reopen || false;
       this.permissions.undelete = this.config.tasks_undelete || false;
 
-      if (Object.keys(this.currentCaseRecord).length) {
-        this.object = 'case'
-        this.object_id = this.currentCaseRecord.get('id')
+      if ( window.VUETASKS.config.currentCaseRecord ) {
+        this.currentCaseRecord = this.config.currentCaseRecord;
+        if (Object.keys(this.currentCaseRecord).length) {
+          this.object = 'case'
+          this.object_id = this.currentCaseRecord.get('id')
+        }
+      } else {
+        this.currentCaseRecord = {id: 20}
       }
-      this.$store.commit('SET_CASE', this.currentCaseRecord)
-    } else {
-      this.$store.commit('SET_CASE', {id: 20})
+      this.$store.commit('tasks/SET_CASE', this.currentCaseRecord)
+      this.fetchTasks()
     }
-    this.fetchTasks()
     if ( !this.isPanelVisible.list ) {
       this.showHomeView()
     }
@@ -227,6 +222,12 @@ interface State {
   },
 
   computed: {
+    openTasks() {
+      return this.$store.state.topOpenTasks
+    },
+    // topOpenTasks() {
+    //   return this.$store.state.topOpenTasks
+    // }
   },
 
   methods: {
@@ -256,7 +257,8 @@ interface State {
     },
 
     hasOpenTasks() {
-      return this.$store.getters.openTasks.length > 0
+      let openTasks = this.$store.getters.openTasks
+      return openTasks ? openTasks.length > 0 : false
     },
 
     showAddView() {
@@ -400,7 +402,7 @@ interface State {
     },
 
     async fetchTasks() {
-      this.$store.dispatch('fetchTasks')
+      this.$store.dispatch('tasks/fetchTasks')
     },
 
     async getTasks() {
