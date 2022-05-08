@@ -68,34 +68,34 @@ export default {
                     context.commit('SET_TASKS', tasks.tasks)
                 })
         },
-        // addTask: function(commit: Commit, state: TasksState): void {
-        //     if (!state.newTask) {
-        //         // do not add empty todos
-        //         return
-        //     }
-        //     const task = {
-        //         name: state.newTask,
-        //         completed: false,
-        //     }
-        //     axios.post(taskEngineUrl+'/todos', task).then(_ => {
-        //         commit('ADD_TASK', task)
-        //     })
-        // },
-        // updateTask ({ commit, state }) {
-        //     if (!state.newTask) {
-        //         // do not add empty todos
-        //         return
-        //     }
-        //     const task = {
-        //         title: state.newTask,
-        //         completed: false,
-        //     }
-        //     axios.put(taskEngineUrl+'/todos', task).then(_ => {
-        //         commit('ADD_TASK', task)
-        //     })
-        // },
-        // clearNewTodo ({ commit }) {
-        //     commit('CLEAR_NEW_TASK')
-        // }
+        addTask: function(context: Context): void {
+            if (!context.state.newTask) {
+                // do not add empty todos
+                return
+            }
+            const task = {
+                name: context.state.newTask,
+                completed: false,
+            }
+            axios.post(context.state.url, task).then(_ => {
+                context.commit('ADD_TASK', task)
+            })
+        },
+        updateTask: function(context: Context): void {
+            if (!context.state.newTask) {
+                // do not add empty todos
+                return
+            }
+            const task = {
+                title: context.state.newTask,
+                completed: false,
+            }
+            axios.put(taskEngineUrl+'/todos', task).then(_ => {
+                context.commit('ADD_TASK', task)
+            })
+        },
+        clearNewTodo: function(context: Context): void {
+            context.commit('CLEAR_NEW_TASK')
+        }
     }
 }

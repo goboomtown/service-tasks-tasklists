@@ -404,30 +404,7 @@ interface State {
     async fetchTasks() {
       this.$store.dispatch('tasks/fetchTasks')
     },
-
-    async getTasks() {
-      try {
-        let url = this.getUrl()
-        let response = await axios.get(url)
-        let tasks = response.data.tasks
-        if ( tasks ) {
-          this.update = true
-          this.clearTasks()
-          this.tasks.all = tasks;
-          tasks.map(this.organizeTasks)
-          this.tasks.topOpen = this.tasks.open.slice(0, this.maxOpenTasks)
-          if ( !this.isPanelVisible.list ) {
-            this.showHomeView()
-          }
-        }
-      } catch (err) {
-        if ( this.isMenuUnavailable ) {
-          this.isPanelVisible.tasks = true
-        }
-        this.handleServerError(err)
-      }
-    },
-
+    
     async saveTasks() {
       try {
         let url = this.getUrl()
