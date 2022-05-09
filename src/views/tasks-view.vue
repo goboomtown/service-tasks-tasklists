@@ -1,5 +1,5 @@
 <template>
-  <div id="tasks-view" data-testid="tasks-show-tasks-view" v-show="isPanelVisible.tasks && permissions.view">
+  <div id="tasks-view" data-testid="tasks-show-tasks-view" v-show="isPanelVisible.tasks && $store.state.tasks.permissions.view">
     <h2>Tasks</h2>
     <div class="tasks-list" v-for="task in $store.getters['tasks/topOpenTasks']" v-bind:key="task" v-bind:todo="task">
       <div class="task-name-description">
@@ -7,17 +7,17 @@
         <div class="task-description">{{ formatDate(task.due_datetime) }}</div>
       </div>
       <div class="tasks-actions">
-        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)" v-show="permissions.edit">
-        <span data-testid="tasks-edit-task-button" @click="editTask(task)" v-show="permissions.edit">&gt;</span>
+        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)" v-show="$store.state.tasks.permissions.edit">
+        <span data-testid="tasks-edit-task-button" @click="editTask(task)" v-show="$store.state.tasks.permissions.edit">&gt;</span>
       </div>
     </div>
     <div v-show="isMenuUnavailable">
-      <DxButton class="tasks-button" type="normal" text="Add Task" data-testid="tasks-show-tasks-add-button" @click="showAddView" v-show="permissions.add"/>
+      <DxButton class="tasks-button" type="normal" text="Add Task" data-testid="tasks-show-tasks-add-button" @click="showAddView" v-show="$store.state.tasks.permissions.add"/>
       <DxButton class="tasks-button" type="normal" text="List Tasks" data-testid="tasks-show-tasks-list-button" @click="showListView"/>
     </div>
   </div>
 
-  <div id="task-add-view" data-testid="tasks-add-tasks-view" v-show="isPanelVisible.add && permissions.view">
+  <div id="task-add-view" data-testid="tasks-add-tasks-view" v-show="isPanelVisible.add && $store.state.tasks.permissions.view">
     <h2>Add Task</h2>
     <div>
       <div class="label">Name:</div> <div><DxTextBox v-model:value="taskName" data-testid="tasks-add-name"/></div>
@@ -34,7 +34,7 @@
     </div>
   </div>
 
-  <div id="task-edit-view" data-testid="tasks-edit-tasks-view" v-show="isPanelVisible.edit && permissions.view">
+  <div id="task-edit-view" data-testid="tasks-edit-tasks-view" v-show="isPanelVisible.edit && $store.state.tasks.permissions.view">
     <h2>Edit Task</h2>
     <div>
       <div class="label">Name:</div> <div><DxTextBox v-model:value="taskName" data-testid="tasks-edit-name"/></div>
@@ -50,7 +50,7 @@
     </div>
     <div class="tasks-buttons flex">
       <div class="delete">
-        <DxButton class="tasks-button" type="normal" text="Delete" data-testid="tasks-edit-task-delete-button" @click="deleteCurrentTask" v-show="permissions.del"/>
+        <DxButton class="tasks-button" type="normal" text="Delete" data-testid="tasks-edit-task-delete-button" @click="deleteCurrentTask" v-show="$store.state.tasks.permissions.del"/>
       </div>
       <div class="cancel-save">
         <DxButton class="tasks-button" type="normal" text="Cancel" data-testid="tasks-edit-task-cancel-button" @click="showHomeView"/>
@@ -59,7 +59,7 @@
     </div>
   </div>
 
-  <div id="task-list-view" data-testid="tasks-list-tasks-view" v-show="isPanelVisible.list && permissions.view">
+  <div id="task-list-view" data-testid="tasks-list-tasks-view" v-show="isPanelVisible.list && $store.state.tasks.permissions.view">
     <h2>Tasklist</h2>
     <h3>Open Tasks</h3>
     <div class="tasks-list" v-for="task in $store.getters['tasks/openTasks']" v-bind:key="task" v-bind:todo="task">
@@ -68,8 +68,8 @@
         <div class="task-description">{{ formatDate(task.due_datetime) }}</div>
       </div>
       <div class="tasks-actions">
-        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)" v-show="permissions.edit">
-        <DxButton class="tasks-button" type="normal" text="Delete" data-testid="tasks-list-open-tasks-delete-button" @click="deleteTask(task)" v-show="permissions.del"/>
+        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)" v-show="$store.state.tasks.permissions.edit">
+        <DxButton class="tasks-button" type="normal" text="Delete" data-testid="tasks-list-open-tasks-delete-button" @click="deleteTask(task)" v-show="$store.state.tasks.permissions.del"/>
       </div>
     </div>
     <h3>Completed Tasks</h3>
@@ -79,8 +79,8 @@
         <div class="task-description">{{ formatDate(task.due_datetime) }}</div>
       </div>
       <div class="tasks-actions">
-        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)" v-show="permissions.reopen">
-        <DxButton class="tasks-button" type="normal" text="Delete" data-testid="tasks-list-open-tasks-delete-button" @click="deleteTask(task)" v-show="permissions.del"/>
+        <input type="checkbox" data-testid="tasks-complete-checkbox" v-model="task.completed" @change="completeTask(task, $event)" v-show="$store.state.tasks.permissions.reopen">
+        <DxButton class="tasks-button" type="normal" text="Delete" data-testid="tasks-list-open-tasks-delete-button" @click="deleteTask(task)" v-show="$store.state.tasks.permissions.del"/>
       </div>
     </div>
     <DxButton class="tasks-button" type="normal" text="Cancel" data-testid="tasks-list-tasks-cancel-button" @click="showHomeView"/>
@@ -90,13 +90,12 @@
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
 
-import axios from "axios";
+// import axios from "axios";
 import DxButton from 'devextreme-vue/button';
 import DxDateBox from 'devextreme-vue/date-box';
 import DxTextBox from 'devextreme-vue/text-box';
 import { Task } from '../interfaces/task';
 import { TaskAction } from '../interfaces/task-action';
-import { Permissions } from '../interfaces/permissions';
 
 interface DateBoxConfigs {
   minDate: Date
@@ -127,7 +126,6 @@ interface State {
   dateBoxConfigs: DateBoxConfigs
   config?: any,
   action: TaskAction,
-  permissions: Permissions,
   tasks: Tasks,
   isPanelVisible: Visibility,
   currentCaseRecord?: any,
@@ -196,26 +194,18 @@ interface State {
       id: 0,
       maxOpenTasks: 3,
       handler: null,
-      permissions: {
-        view: false,
-        add: false,
-        edit: false,
-        del: false,
-        reopen: false,
-        undelete: false,
-      }
     }
   },
 
   created() {
     if ( window.VUETASKS && window.VUETASKS.config ) {
       this.config = window.VUETASKS.config;
-      this.permissions.view = this.config.tasks_view || false;
-      this.permissions.add = this.config.tasks_add || false;
-      this.permissions.edit = this.config.tasks_edit || false;
-      this.permissions.del = this.config.tasks_del || false;
-      this.permissions.reopen = this.config.tasks_reopen || false;
-      this.permissions.undelete = this.config.tasks_undelete || false;
+      this.$store.commit('tasks/SET_VIEW_PERMISSION', this.config.tasks_view || false)
+      this.$store.commit('tasks/SET_ADD_PERMISSION', this.config.tasks_add || false)
+      this.$store.commit('tasks/SET_EDIT_PERMISSION', this.config.tasks_edit || false)
+      this.$store.commit('tasks/SET_DELETE_PERMISSION', this.config.tasks_del || false)
+      this.$store.commit('tasks/SET_REOPEN_PERMISSION', this.config.tasks_reopen || false)
+      this.$store.commit('tasks/SET_UNDELETE_PERMISSION', this.config.tasks_undelete || false)
 
       if ( window.VUETASKS.config.currentCaseRecord ) {
         this.currentCaseRecord = this.config.currentCaseRecord;
@@ -337,6 +327,7 @@ interface State {
       }
       let task = this.buildTaskFromFormFields()
       this.tasks.all.push(task)
+      this.$store.dispatch('tasks/ADD_TASK', task)
       this.sendEvent({
         action: this.action.added,
         task: task,
@@ -458,16 +449,17 @@ interface State {
     },
     
     async saveTasks() {
-      try {
-        let url = this.getUrl()
-        let tasks = { tasks: this.tasks.all }
-        let tasksJSON = JSON.stringify(tasks)
-        let config = { headers: { 'Content-Type': 'text/plain' } }
-        this.update ? await axios.put(url, tasksJSON, config) : await axios.post(url, tasksJSON, config);
-        this.getTasks()
-      } catch (err) {
-        this.handleServerError(err)
-      }
+      this.$store.dispatch('tasks/updateTasks')
+      // try {
+      //   let url = this.getUrl()
+      //   let tasks = { tasks: this.tasks.all }
+      //   let tasksJSON = JSON.stringify(tasks)
+      //   let config = { headers: { 'Content-Type': 'text/plain' } }
+      //   this.update ? await axios.put(url, tasksJSON, config) : await axios.post(url, tasksJSON, config);
+      //   this.getTasks()
+      // } catch (err) {
+      //   this.handleServerError(err)
+      // }
     },
 
     handleServerError(error: any) {
