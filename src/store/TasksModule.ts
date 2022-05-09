@@ -18,7 +18,8 @@ export interface TasksState {
     permissions: Permissions,
     taskActions: TaskAction,
     currentCase: any,
-    url: string
+    url: string,
+    taskActionEventHandler: any,
 }
 
 export default {
@@ -44,7 +45,8 @@ export default {
             deleted: 'task-deleted',
             undeleted: 'task-undeleted'
         },
-        url: ''
+        url: '',
+        taskActionEventHandler: null
     }),
     getters: {
         newTask: (state: TasksState) => {
@@ -67,11 +69,29 @@ export default {
         },
     },
     mutations: {
-        SET_TASKS: function(state: TasksState, tasks: Array<Task>) {
+        SET_TASK_ACTION_EVENT_HANDLER (state: TasksState, handler: any) {
+            state.taskActionEventHandler = handler
+        },
+        SET_TASKS (state: TasksState, tasks: Array<Task>) {
+            for (let n = 0; n < tasks.length; n++) {
+                tasks[n].ID = n
+            }
             state.tasks = tasks
         },
         ADD_TASK (state: TasksState, task: Task) {
             state.tasks.push(task)
+        },
+        UPDATE_TASK (state: TasksState, task: Task) {
+            state.tasks[task.ID] = task
+        },
+        DELETE_TASK (state: TasksState, task: Task) {
+            state.tasks[task.ID].deleted = true
+        },
+        UNDELETE_TASK (state: TasksState, task: Task) {
+            state.tasks[task.ID].deleted = false
+        },
+        COMPLETE_TASK (state: TasksState, task: Task) {
+            state.tasks[task.ID].completed = task.completed
         },
         CLEAR_NEW_TASK (state: TasksState) {
             // state.newTask = newTask
@@ -100,12 +120,20 @@ export default {
         },
     },
     actions: {
+        sendEvent: function(context: Context, event: any): void {
+            if ( context.state.taskActionEventHandler ) {
+                context.state.taskActionEventHandler(event)
+            }
+        },
+        setCase: function(context: Context, currentCase: any): void {
+            context.commit('SET_CASE', currentCase)
+        },
         fetchTasks: function(context: Context): void {
             axios
                 .get(context.state.url)
                 .then(r => r.data)
                 .then(tasks => {
-                    context.commit('SET_TASKS', tasks.tasks)
+                    context.commit('SET_TASKS', tasks)
                 })
         },
         addTask: function(context: Context): void {
@@ -138,10 +166,10 @@ export default {
             const tasksJSON = JSON.stringify(context.state.tasks)
             const config = { headers: { 'Content-Type': 'text/plain' } }
             axios.put(context.state.url, tasksJSON, config).then(_ => {
-                this.fetchTasks(context)
+                // this.fetchTasks(context)
             })
         },
-        clearNewTodo: function(context: Context): void {
+        clearNewTask: function(context: Context): void {
             context.commit('CLEAR_NEW_TASK')
         }
     }

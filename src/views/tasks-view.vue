@@ -1,7 +1,7 @@
 <template>
   <div id="tasks-view" data-testid="tasks-show-tasks-view" v-show="isPanelVisible.tasks && $store.state.tasks.permissions.view">
     <h2>Tasks</h2>
-    <div class="tasks-list" v-for="task in $store.getters['tasks/topOpenTasks']" v-bind:key="task" v-bind:todo="task">
+    <div class="tasks-list" v-for="task in topOpenTasks" v-bind:key="task" v-bind:todo="task">
       <div class="task-name-description">
         <div class="task-name">{{ task.name }}</div>
         <div class="task-description">{{ formatDate(task.due_datetime) }}</div>
@@ -20,13 +20,13 @@
   <div id="task-add-view" data-testid="tasks-add-tasks-view" v-show="isPanelVisible.add && $store.state.tasks.permissions.view">
     <h2>Add Task</h2>
     <div>
-      <div class="label">Name:</div> <div><DxTextBox v-model:value="taskName" data-testid="tasks-add-name"/></div>
+      <div class="label">Name:</div> <div><DxTextBox v-model:value="currentTask.name" data-testid="tasks-add-name"/></div>
     </div>
     <div>
-      <div class="label">Description:</div> <div><DxTextBox v-model:value="taskDescription" data-testid="tasks-add-description" :min="dateBoxConfigs.minDate"/></div>
+      <div class="label">Description:</div> <div><DxTextBox v-model:value="currentTask.description" data-testid="tasks-add-description" :min="dateBoxConfigs.minDate"/></div>
     </div>
     <div>
-      <div class="label">Due Date:</div> <div><DxDateBox v-model:value="taskDueDatetime" type="datetime" data-testid="tasks-add-due-datetime" :min="dateBoxConfigs.minDate"/></div>
+      <div class="label">Due Date:</div> <div><DxDateBox v-model:value="currentTask.due_datetime" type="datetime" data-testid="tasks-add-due-datetime" :min="dateBoxConfigs.minDate"/></div>
     </div>
     <div class="tasks-buttons">
       <DxButton class="tasks-button" type="normal" text="Cancel" data-testid="tasks-add-task-cancel-button" @click="showHomeView"/>
@@ -37,13 +37,13 @@
   <div id="task-edit-view" data-testid="tasks-edit-tasks-view" v-show="isPanelVisible.edit && $store.state.tasks.permissions.view">
     <h2>Edit Task</h2>
     <div>
-      <div class="label">Name:</div> <div><DxTextBox v-model:value="taskName" data-testid="tasks-edit-name"/></div>
+      <div class="label">Name:</div> <div><DxTextBox v-model:value="currentTask.name" data-testid="tasks-edit-name"/></div>
     </div>
     <div>
-      <div class="label">Description:</div> <div><DxTextBox v-model:value="taskDescription" data-testid="tasks-edit-description"/></div>
+      <div class="label">Description:</div> <div><DxTextBox v-model:value="currentTask.description" data-testid="tasks-edit-description"/></div>
     </div>
     <div>
-      <div class="label">Due Date:</div> <div><DxDateBox v-model:value="taskDueDatetime" type="datetime" data-testid="tasks-add-due-datetime" :min="dateBoxConfigs.minDate"/></div>
+      <div class="label">Due Date:</div> <div><DxDateBox v-model:value="currentTask.due_datetime" type="datetime" data-testid="tasks-add-due-datetime" :min="dateBoxConfigs.minDate"/></div>
     </div>
     <div>
       <div class="label">Completed: <input type="checkbox" id="edit-checkbox" data-testid="tasks-edit-complete-checkbox" v-model="completed"></div>
@@ -62,7 +62,7 @@
   <div id="task-list-view" data-testid="tasks-list-tasks-view" v-show="isPanelVisible.list && $store.state.tasks.permissions.view">
     <h2>Tasklist</h2>
     <h3>Open Tasks</h3>
-    <div class="tasks-list" v-for="task in $store.getters['tasks/openTasks']" v-bind:key="task" v-bind:todo="task">
+    <div class="tasks-list" v-for="task in openTasks" v-bind:key="task" v-bind:todo="task">
       <div class="task-name-description">
         <div class="task-name">{{ task.name }}</div>
         <div class="task-description">{{ formatDate(task.due_datetime) }}</div>
@@ -73,7 +73,7 @@
       </div>
     </div>
     <h3>Completed Tasks</h3>
-    <div class="tasks-list" v-for="task in $store.getters['tasks/completedTasks']" v-bind:key="task" v-bind:todo="task">
+    <div class="tasks-list" v-for="task in completedTasks" v-bind:key="task" v-bind:todo="task">
       <div class="task-name-description">
         <div class="task-name">{{ task.name }}</div>
         <div class="task-description">{{ formatDate(task.due_datetime) }}</div>
@@ -95,7 +95,6 @@ import DxButton from 'devextreme-vue/button';
 import DxDateBox from 'devextreme-vue/date-box';
 import DxTextBox from 'devextreme-vue/text-box';
 import { Task } from '../interfaces/task';
-import { TaskAction } from '../interfaces/task-action';
 
 interface DateBoxConfigs {
   minDate: Date
@@ -105,14 +104,6 @@ interface Event {
   action: string,
   task: Task,
   date: string,
-}
-
-interface Tasks {
-  all: Array<Task>,
-  open: Array<Task>,
-  completed: Array<Task>,
-  deleted: Array<Task>,
-  topOpen: Array<Task>,
 }
 
 interface Visibility {
@@ -125,22 +116,18 @@ interface Visibility {
 interface State {
   dateBoxConfigs: DateBoxConfigs
   config?: any,
-  action: TaskAction,
-  tasks: Tasks,
   isPanelVisible: Visibility,
   currentCaseRecord?: any,
   object: string,
   object_id: string,
   currentIndex: number,
-  currentTask: any,
+  currentTask: Task,
   taskName: string,
   taskDescription: string,
   taskDueDatetime: any,
   completed: boolean,
   update: boolean,
   id: number,
-  maxOpenTasks: number,
-  handler: any,
   isMenuUnavailable: boolean,
 }
 
@@ -159,21 +146,6 @@ interface State {
         minDate: today,
       },
       config: {},
-      action: {
-        completed: 'task-completed',
-        reopened: 'task-reopened',
-        added:'task-added',
-        edited: 'task-edited',
-        deleted: 'task-deleted',
-        undeleted: 'task-undeleted'
-      },
-      tasks: {
-        all: [],
-        open: [],
-        completed: [],
-        deleted: [],
-        topOpen: [],
-      },
       isMenuUnavailable: true,
       isPanelVisible: {
         tasks: false,
@@ -185,15 +157,13 @@ interface State {
       object: 'case',
       object_id: '20',
       currentIndex: 0,
-      currentTask: null,
+      currentTask: { ID: 0, name: '', description: ''},
       taskName: '',
       taskDescription: '',
       taskDueDatetime: null,
       completed: false,
       update: false,
-      id: 0,
-      maxOpenTasks: 3,
-      handler: null,
+      id: 0
     }
   },
 
@@ -218,6 +188,7 @@ interface State {
       }
       this.$store.commit('tasks/SET_CASE', this.currentCaseRecord)
       this.fetchTasks()
+      // this.$store.dispatch('tasks/setCase', this.currentCaseRecord)
     }
     if ( !this.isPanelVisible.list ) {
       this.showHomeView()
@@ -233,11 +204,17 @@ interface State {
 
   computed: {
     openTasks() {
-      return this.$store.state.topOpenTasks
+      return this.$store.getters['tasks/openTasks']
     },
-    // topOpenTasks() {
-    //   return this.$store.state.topOpenTasks
-    // }
+    completedTasks() {
+      return this.$store.getters['tasks/completedTasks']
+    },
+    topOpenTasks() {
+      return this.$store.getters['tasks/topOpenTasks']
+    } ,
+    action() {
+      return this.$store.state.taskActions
+    }
   },
 
   methods: {
@@ -272,9 +249,7 @@ interface State {
     },
 
     sendEvent(event: Event) {
-      if ( this.handler ) {
-        this.handler(event)
-      }
+      this.$store.dispatch('tasks/sendEvent', event)
     },
 
     hidePanels() {
@@ -287,7 +262,6 @@ interface State {
     showHomeView() {
       this.hidePanels()
       if ( this.hasOpenTasks() || this.isMenuUnavailable ) {
-        // this.tasks.topOpen = this.openTasks
         this.isPanelVisible.tasks = true
       }
     },
@@ -309,7 +283,7 @@ interface State {
     },
 
     addTask() {
-      this.clearTaskFields()
+      this.currentTask = { name: '', description: ''}
       this.hidePanels()
       this.isPanelVisible.add = true
     },
@@ -325,12 +299,10 @@ interface State {
       if ( !this.validateRequiredFields() ) {
         return
       }
-      let task = this.buildTaskFromFormFields()
-      this.tasks.all.push(task)
-      this.$store.dispatch('tasks/ADD_TASK', task)
+      this.$store.commit('tasks/ADD_TASK', this.currentTask)
       this.sendEvent({
-        action: this.action.added,
-        task: task,
+        action: this.action().added,
+        task: this.currentTask,
         time: new Date().toISOString()
       })
       this.saveTasks()
@@ -341,31 +313,21 @@ interface State {
       if ( !this.validateRequiredFields() ) {
         return
       }
-      this.tasks.all[this.currentIndex] = this.buildTaskFromFormFields()
+      this.$store.commit('tasks/UPDATE_TASK', this.currentTask)
       this.sendEvent({
-        action: this.action.edited,
-        task: this.tasks.all[this.currentIndex],
+        action: this.action().edited,
+        task: this.currentTask,
         time: new Date().toISOString()
       })
       this.saveTasks()
       this.showHomeView()
     },
 
-    buildTaskFromFormFields(): Task {
-      const dueDatetime = this.isDateObject(this.taskDueDatetime) ? this.taskDueDatetime.toISOString() : null;
-
-      return {
-        ID: this.tasks.all.length,
-        name: this.taskName,
-        description: this.taskDescription,
-        due_datetime: dueDatetime,
-        completed: this.completed,
-        deleted: false
-      }
-    },
-
     validateRequiredFields(): boolean {
-      return this.taskName.length>0
+      this.currentTask.due_datetime = this.isDateObject(this.currentTask.due_datetime)
+          ? this.this.currentTask.due_datetime.toISOString()
+          : null;
+      return this.currentTask.name.length>0
     },
 
     listTasks() {
@@ -378,19 +340,15 @@ interface State {
       this.isPanelVisible.edit = true
       this.currentTask = task
       this.currentIndex = task.ID
-      this.taskName = task.name
-      this.taskDescription = task.description
-      this.taskDueDatetime = this.isDateString(task.due_datetime) ? new Date(String(task.due_datetime)) : null;
-      this.completed = task.completed
     },
 
     deleteCurrentTask() {
       if ( !this.currentTask ) {
         return
       }
-      this.tasks.all.at(this.currentTask.ID).deleted = true
+      this.$store.commit('tasks/DELETE_TASK', this.currentTask)
       this.sendEvent({
-        action: this.action.deleted,
+        action: this.action().deleted,
         task: this.currentTask,
         time: new Date().toISOString()
       })
@@ -399,9 +357,9 @@ interface State {
     },
 
     deleteTask(task: Task) {
-      this.tasks.all.at(task.ID).deleted = true
+      this.$store.commit('tasks/DELETE_TASK', task)
       this.sendEvent({
-        action: this.action.deleted,
+        action: this.action().deleted,
         task: task,
         time: new Date().toISOString()
       })
@@ -409,9 +367,9 @@ interface State {
     },
 
     undeleteTask(task: Task) {
-      this.tasks.all.at(task.ID).deleted = false
+      this.$store.commit('tasks/UNDELETE_TASK', task)
       this.sendEvent({
-        action: this.action.undeleted,
+        action: this.action().undeleted,
         task: task,
         time: new Date().toISOString()
       })
@@ -421,77 +379,37 @@ interface State {
     completeTask(task: Task, event: any) {
       task.completed = event.target.checked
       this.sendEvent({
-        action: event.target.checked?this.action.completed:this.action.reopened,
+        action: event.target.checked?this.action().completed:this.action().reopened,
         task: task,
         time: new Date().toISOString()
       })
-      this.tasks.all[task.ID] = task
+      this.$store.commit('tasks/COMPLETE_TASK', task)
       this.saveTasks()
     },
     
-    clearTasks() {
-      this.id = 0
-      this.tasks.all = []
-      this.tasks.open = []
-      this.tasks.completed = []
-      this.tasks.deleted = []
-      this.tasks.topOpen = []
-    },
-
-    getUrl(): string {
-      const taskEngineUrl = 'https://us-central1-developer-playground-328319.cloudfunctions.net/service-tasks-engine';
-
-      return `${taskEngineUrl}/${this.object}/${this.object_id}/default`;
-    },
-
     async fetchTasks() {
       this.$store.dispatch('tasks/fetchTasks')
     },
     
     async saveTasks() {
       this.$store.dispatch('tasks/updateTasks')
-      // try {
-      //   let url = this.getUrl()
-      //   let tasks = { tasks: this.tasks.all }
-      //   let tasksJSON = JSON.stringify(tasks)
-      //   let config = { headers: { 'Content-Type': 'text/plain' } }
-      //   this.update ? await axios.put(url, tasksJSON, config) : await axios.post(url, tasksJSON, config);
-      //   this.getTasks()
-      // } catch (err) {
-      //   this.handleServerError(err)
-      // }
     },
 
-    handleServerError(error: any) {
-      if (error.response) {
-        // client received an error response (5xx, 4xx)
-        console.log("Server Error:", error)
-      } else if (error.request) {
-        // client never received a response, or request never left
-        console.log("Network Error:", error)
-      } else {
-        console.log("Client Error:", error)
-      }
-    },
+    // handleServerError(error: any) {
+    //   if (error.response) {
+    //     // client received an error response (5xx, 4xx)
+    //     console.log("Server Error:", error)
+    //   } else if (error.request) {
+    //     // client never received a response, or request never left
+    //     console.log("Network Error:", error)
+    //   } else {
+    //     console.log("Client Error:", error)
+    //   }
+    // },
 
-    organizeTasks(task: Task) {
-      task.ID = this.id++
-      if ( task.deleted ) {
-        this.tasks.deleted.push(task)
-      } else {
-        if ( task.completed ) {
-          this.tasks.completed.push(task)
-        } else {
-          this.tasks.open.push(task)
-        }
-      }
-     },
-    
   },
 
   mounted() {
-    // this.getTasks();
-    // store.dispatch("fetchUsers");
   },
 
 })

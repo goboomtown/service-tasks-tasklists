@@ -24,7 +24,8 @@ import TasksView from './views/tasks-view.vue'
 
   methods: {
     setEventHandler(handler: any) {
-      this.$refs.tasksView.setEventHandler(handler)
+      // this.$refs.tasksView.setEventHandler(handler)
+      this.$store.commit('tasks/SET_TASK_ACTION_EVENT_HANDLER', handler)
     },
 
     showAddView() {
