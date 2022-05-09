@@ -18,6 +18,7 @@ export interface TasksState {
   permissions: Permissions;
   taskActions: TaskAction;
   currentCase: any;
+  currentTask: Task | null;
   url: string;
   taskActionEventHandler: any;
 }
@@ -29,6 +30,7 @@ export default {
     update: false,
     newTask: null,
     currentCase: "",
+    currentTask: { ID: 0 },
     permissions: {
       view: false,
       add: false,
@@ -53,26 +55,32 @@ export default {
       state.newTask;
     },
     tasks: (state: TasksState) => {
-      state.tasks;
+      return state.tasks;
+    },
+    currentTask: (state: TasksState) => {
+      return state.currentTask;
+    },
+    taskWithId: (state: TasksState) => (id: number) => {
+      return state.tasks.find((task) => task.ID === id);
     },
     case: (state: TasksState) => {
       state.currentCase;
     },
     openTasks: (state: TasksState) => {
       return state.tasks && state.tasks.length > 0
-        ? state.tasks.filter((task) => !task["completed"])
+        ? state.tasks.filter((task) => !task["completed"] && !task["deleted"])
         : [];
     },
     topOpenTasks: (state: TasksState) => {
       return state.tasks && state.tasks.length > 0
         ? state.tasks
-            .filter((task) => !task["completed"])
+            .filter((task) => !task["completed"] && !task["deleted"])
             .slice(0, maxOpenTasks)
         : [];
     },
     completedTasks: (state: TasksState) => {
       return state.tasks && state.tasks.length > 0
-        ? state.tasks.filter((task) => task["completed"])
+        ? state.tasks.filter((task) => task["completed"] && !task["deleted"])
         : [];
     },
   },
@@ -84,7 +92,14 @@ export default {
       for (let n = 0; n < tasks.length; n++) {
         tasks[n].ID = n;
       }
+      state.update = tasks.length > 0;
       state.tasks = tasks;
+    },
+    SET_CURRENT_TASK(state: TasksState, task: Task) {
+      state.currentTask = task;
+    },
+    CLEAR_CURRENT_TASK(state: TasksState) {
+      state.currentTask = { ID: 0, name: "", description: "" };
     },
     ADD_TASK(state: TasksState, task: Task) {
       state.tasks.push(task);
@@ -136,12 +151,15 @@ export default {
     setCase: function (context: Context, currentCase: any): void {
       context.commit("SET_CASE", currentCase);
     },
+    setCurrentTask: function (context: Context, task: Task): void {
+      context.commit("SET_CURRENT_TASK", task);
+    },
     fetchTasks: function (context: Context): void {
       axios
         .get(context.state.url)
         .then((r) => r.data)
         .then((tasks) => {
-          context.commit("SET_TASKS", tasks);
+          context.commit("SET_TASKS", tasks.tasks);
         });
     },
     addTask: function (context: Context): void {
@@ -171,11 +189,38 @@ export default {
       // })
     },
     updateTasks: function (context: Context): void {
-      const tasksJSON = JSON.stringify(context.state.tasks);
+      const tasks = { tasks: context.state.tasks };
+      const tasksJSON = JSON.stringify(tasks);
       const config = { headers: { "Content-Type": "text/plain" } };
-      axios.put(context.state.url, tasksJSON, config).then((_) => {
-        // this.fetchTasks(context)
-      });
+      if (context.state.update) {
+        axios
+          .put(context.state.url, tasksJSON, config)
+          .then((response) => {
+            // this.fetchTasks(context)
+            console.log("here");
+          })
+          .catch(function (error) {
+            if (error.response) {
+              // get response with a status code not in range 2xx
+              console.log(error.response.data);
+              console.log(error.response.status);
+              console.log(error.response.headers);
+            } else if (error.request) {
+              // no response
+              console.log(error.request);
+              // instance of XMLHttpRequest in the browser
+              // instance ofhttp.ClientRequest in node.js
+            } else {
+              console.log("Error", error.message);
+            }
+            console.log(error.config);
+          });
+      } else {
+        axios.post(context.state.url, tasksJSON, config).then((_) => {
+          // this.fetchTasks(context)
+          console.log("here");
+        });
+      }
     },
     clearNewTask: function (context: Context): void {
       context.commit("CLEAR_NEW_TASK");
