@@ -6,51 +6,48 @@
   </div>
 </template>
 
-
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import TasksView from './views/tasks-view.vue'
+import { Options, Vue } from "vue-class-component";
+import TasksView from "./views/tasks-view.vue";
 
 @Options({
   components: {
-    TasksView
+    TasksView,
   },
 
   computed: {
     getTasksView(): any {
-      return this.$refs['tasksView'].instance;
+      return this.$refs["tasksView"].instance;
     },
   },
 
   methods: {
     setEventHandler(handler: any) {
       // this.$refs.tasksView.setEventHandler(handler)
-      this.$store.commit('tasks/SET_TASK_ACTION_EVENT_HANDLER', handler)
+      this.$store.commit("tasks/SET_TASK_ACTION_EVENT_HANDLER", handler);
     },
 
     showAddView() {
-      this.$refs.tasksView.showAddView()
+      this.$refs.tasksView.showAddView();
     },
 
     showListView() {
-      this.$refs.tasksView.showListView()
+      this.$refs.tasksView.showListView();
     },
   },
 
   created() {
-    this.rand = Math.round(Math.random() * 1000)
+    this.rand = Math.round(Math.random() * 1000);
   },
 
   data() {
     return {
       key: 0,
-      rand: ''
-    }
+      rand: "",
+    };
   },
-
 })
 export default class App extends Vue {}
-
 </script>
 
 <style lang="scss">
@@ -76,5 +73,3 @@ body {
   display: flex;
 }
 </style>
-
-
