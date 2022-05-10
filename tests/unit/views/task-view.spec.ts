@@ -1,11 +1,11 @@
 import { shallowMount } from "@vue/test-utils";
-import TasksView from "../../../src/views/tasks-view.vue";
+import TaskView from "../../../src/views/task-view.vue";
 
-describe("tasks-view.vue", () => {
+describe("task-view.vue", () => {
   let wrapper: any;
 
   beforeEach(() => {
-    wrapper = shallowMount(TasksView, {
+    wrapper = shallowMount(TaskView, {
       propsData: {},
       config: {},
       mocks: {},
@@ -19,10 +19,5 @@ describe("tasks-view.vue", () => {
     expect(
       wrapper.findComponent('[data-testid="tasks-complete-checkbox"]').exists()
     );
-  });
-
-  test("can you show add view", async () => {
-    wrapper.vm.showAddView();
-    expect(wrapper.isPanelVisible.add).toBe(true);
   });
 });

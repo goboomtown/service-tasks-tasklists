@@ -108,7 +108,11 @@ export default {
       state.tasks[task.ID] = task;
     },
     DELETE_TASK(state: TasksState, task: Task) {
-      state.tasks[task.ID].deleted = true;
+      const newTask: Task = state.tasks[task.ID];
+      if (newTask) {
+        newTask.deleted = true;
+        state.tasks[task.ID] = newTask;
+      }
     },
     UNDELETE_TASK(state: TasksState, task: Task) {
       state.tasks[task.ID].deleted = false;
