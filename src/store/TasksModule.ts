@@ -20,7 +20,7 @@ export interface TasksState {
   currentCase: any;
   currentTask: Task | null;
   url: string;
-  taskActionEventHandler: any;
+  taskActionEventHandler?: any;
 }
 
 export default {
@@ -201,6 +201,7 @@ export default {
           .put(context.state.url, tasksJSON, config)
           .then((response) => {
             // this.fetchTasks(context)
+            // context.dispatch("fetchTasks");
             console.log("here");
           })
           .catch(function (error) {
