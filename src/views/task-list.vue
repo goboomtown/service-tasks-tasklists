@@ -206,7 +206,7 @@ interface State {
     deleteTask(task: Task) {
       this.$store.commit("tasks/DELETE_TASK", task);
       this.sendEvent({
-        action: this.action().deleted,
+        action: this.$store.state.tasks.taskActions.deleted,
         task: task,
         time: new Date().toISOString(),
       });
@@ -216,7 +216,7 @@ interface State {
     undeleteTask(task: Task) {
       this.$store.commit("tasks/UNDELETE_TASK", task);
       this.sendEvent({
-        action: this.action().undeleted,
+        action: this.$store.state.tasks.taskActions.undeleted,
         task: task,
         time: new Date().toISOString(),
       });
@@ -227,8 +227,8 @@ interface State {
       task.completed = event.target.checked;
       this.sendEvent({
         action: event.target.checked
-          ? this.action().completed
-          : this.action().reopened,
+          ? this.$store.state.tasks.taskActions.completed
+          : this.$store.state.tasks.taskActions.reopened,
         task: task,
         time: new Date().toISOString(),
       });

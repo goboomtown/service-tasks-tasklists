@@ -188,7 +188,7 @@ export default {
       //     context.commit('ADD_TASK', task)
       // })
     },
-    updateTasks: function (context: Context): void {
+    updateTasks: async function (context: Context): Promise<void> {
       const tasks = { tasks: context.state.tasks };
       const tasksJSON = JSON.stringify(tasks);
       const config = { headers: { "Content-Type": "text/plain" } };
