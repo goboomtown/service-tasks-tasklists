@@ -105,20 +105,28 @@ export default {
       state.tasks.push(task);
     },
     UPDATE_TASK(state: TasksState, task: Task) {
-      state.tasks[task.ID] = task;
+      if (task.ID) {
+        state.tasks.splice(task.ID, 1, task);
+      }
     },
     DELETE_TASK(state: TasksState, task: Task) {
-      const newTask: Task = state.tasks[task.ID];
-      if (newTask) {
-        newTask.deleted = true;
-        state.tasks[task.ID] = newTask;
+      if (task.ID) {
+        const newTask: Task = state.tasks[task.ID];
+        if (newTask) {
+          newTask.deleted = true;
+          state.tasks[task.ID] = newTask;
+        }
       }
     },
     UNDELETE_TASK(state: TasksState, task: Task) {
-      state.tasks[task.ID].deleted = false;
+      if (task.ID) {
+        state.tasks[task.ID].deleted = false;
+      }
     },
     COMPLETE_TASK(state: TasksState, task: Task) {
-      state.tasks[task.ID].completed = task.completed;
+      if (task.ID) {
+        state.tasks[task.ID].completed = task.completed;
+      }
     },
     CLEAR_NEW_TASK(state: TasksState) {
       // state.newTask = newTask
@@ -192,7 +200,7 @@ export default {
       //     context.commit('ADD_TASK', task)
       // })
     },
-    updateTasks: async function (context: Context): Promise<void> {
+    updateTasks: function (context: Context): void {
       const tasks = { tasks: context.state.tasks };
       const tasksJSON = JSON.stringify(tasks);
       const config = { headers: { "Content-Type": "text/plain" } };
@@ -222,7 +230,6 @@ export default {
           });
       } else {
         axios.post(context.state.url, tasksJSON, config).then((_) => {
-          // this.fetchTasks(context)
           console.log("here");
         });
       }

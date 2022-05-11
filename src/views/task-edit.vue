@@ -155,7 +155,17 @@ interface State {
 
   methods: {
     isDateObject(date: any): boolean {
-      return date !== null && date.constructor.toString().indexOf("Date") > -1;
+      // const hasDate = date !== null;
+      // const constructor = date.constructor.toString();
+      // return hasDate && constructor.indexOf("Date") > -1;
+      if (Object.prototype.toString.call(date) === "[object Date]") {
+        if (isNaN(date.getTime())) {
+          return false;
+        } else {
+          return true;
+        }
+      }
+      return false;
     },
 
     isDateString(date: any): boolean {
@@ -215,7 +225,7 @@ interface State {
         this.currentTask.due_datetime = this.isDateObject(
           this.currentTask.due_datetime
         )
-          ? this.currentTask.due_datetime.toISOString()
+          ? this.currentTask.due_datetime
           : null;
       }
       return this.currentTask.name.length > 0;
