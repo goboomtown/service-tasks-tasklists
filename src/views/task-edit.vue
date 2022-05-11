@@ -145,19 +145,12 @@ interface State {
       return this.$store.state.taskActions;
     },
     currentTask() {
-      const path = window.location.pathname.slice(1);
-      const tokens = path.split("/");
-      const tasks = this.tasks;
-      const currentTask = tasks[tokens[1]]; // this.$store.getters["tasks/currentTask"];
-      return currentTask || {};
+      return this.tasks[this.$route.params.id];
     },
   },
 
   methods: {
     isDateObject(date: any): boolean {
-      // const hasDate = date !== null;
-      // const constructor = date.constructor.toString();
-      // return hasDate && constructor.indexOf("Date") > -1;
       if (Object.prototype.toString.call(date) === "[object Date]") {
         if (isNaN(date.getTime())) {
           return false;
@@ -203,7 +196,7 @@ interface State {
     },
 
     showHomeView() {
-      window.location.replace(window.origin + "/");
+      this.$router.push("/");
     },
 
     saveTask() {

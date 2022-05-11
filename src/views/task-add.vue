@@ -109,6 +109,9 @@ interface State {
     action() {
       return this.$store.state.tasks.taskActions;
     },
+    currentTask() {
+      return this.$store.state.tasks.currentTask;
+    },
   },
 
   methods: {
@@ -151,7 +154,7 @@ interface State {
     },
 
     showHomeView() {
-      window.location.replace(window.origin + "/");
+      this.$router.push("/");
     },
 
     saveNewTask() {

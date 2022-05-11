@@ -11,9 +11,7 @@ describe("AppTasks.vue", () => {
       stubs: {},
     });
   });
-
-  afterEach(() => {});
-
+  
   // test('is a Vue instance', () => {
   //   expect(wrapper.isVueObject()).toBe(true)
   // });

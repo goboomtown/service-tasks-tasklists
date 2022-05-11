@@ -1,6 +1,6 @@
 import actions, { TasksState } from "../../../src/store/TasksModule";
 import mutations from "../../../src/store/TasksModule";
-import rootState, { State } from "@/store"
+import rootState, { State } from "@/store";
 import { ActionContext } from "vuex";
 import axios from "axios";
 

@@ -79,16 +79,6 @@ interface Visibility {
 
 interface State {
   dateBoxConfigs: DateBoxConfigs;
-  config?: any;
-  isPanelVisible: Visibility;
-  currentIndex: number;
-  currentTask: Task;
-  taskName: string;
-  taskDescription: string;
-  taskDueDatetime: any;
-  completed: boolean;
-  update: boolean;
-  id: number;
   isMenuUnavailable: boolean;
 }
 
@@ -112,22 +102,7 @@ interface State {
       dateBoxConfigs: {
         minDate: today,
       },
-      config: {},
-      isMenuUnavailable: true,
-      isPanelVisible: {
-        tasks: false,
-        add: false,
-        edit: false,
-        list: false,
-      },
-      currentIndex: 0,
-      currentTask: { ID: 0, name: "", description: "" },
-      taskName: "",
-      taskDescription: "",
-      taskDueDatetime: null,
-      completed: false,
-      update: false,
-      id: 0,
+      isMenuUnavailable: false,
     };
   },
   components: {
@@ -196,11 +171,12 @@ interface State {
     },
 
     showAddView() {
-      window.location.replace(window.origin + "/create");
+      this.addTask();
+      this.$router.push("/create");
     },
 
     showListView() {
-      window.location.replace(window.origin + "/list");
+      this.$router.push("/list");
     },
 
     addTask() {
@@ -208,8 +184,7 @@ interface State {
     },
 
     editTask(task: Task) {
-      this.$store.dispatch("tasks/setCurrentTask", task);
-      window.location.replace(window.origin + "/edit/" + task.ID);
+      this.$router.push("/edit/" + task.ID);
     },
     completeTask(task: Task, event: any) {
       task.completed = event.target.checked;

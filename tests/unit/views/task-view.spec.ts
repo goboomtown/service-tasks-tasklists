@@ -12,9 +12,6 @@ describe("task-view.vue", () => {
       stubs: {},
     });
   });
-
-  afterEach(() => {});
-
   test("can complete a task", async () => {
     expect(
       wrapper.findComponent('[data-testid="tasks-complete-checkbox"]').exists()

@@ -1,3 +1,5 @@
+import { createRouter, createWebHashHistory } from "vue-router";
+
 if (process.env.NODE_ENV !== "production") {
   require("devextreme/dist/css/dx.common.css");
   require("./themes/generated/theme.base.css");
@@ -8,12 +10,29 @@ import { createApp } from "vue";
 
 import App from "./AppTasks.vue";
 import appInfo from "./app-info";
+import TaskView from "@/views/task-view.vue";
+import TaskAdd from "@/views/task-add.vue";
+import TaskEdit from "@/views/task-edit.vue";
+import TaskList from "@/views/task-list.vue";
+
+const routes = [
+  { path: "/", component: TaskView },
+  { path: "/create", component: TaskAdd },
+  { path: "/edit/:id", component: TaskEdit },
+  { path: "/list", component: TaskList },
+];
+
+const router = createRouter({
+  history: createWebHashHistory(),
+  routes: routes,
+});
 
 import store from "./store";
 
 const app = createApp(App, {}).use(store);
 
 app.use(store);
+app.use(router);
 
 app.config.globalProperties.$appInfo = appInfo;
 

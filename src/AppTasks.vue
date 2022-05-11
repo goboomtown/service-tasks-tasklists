@@ -1,6 +1,6 @@
 <template>
   <div id="root-vue-tasks">
-    <component :is="currentView" />
+    <router-view></router-view>
   </div>
 </template>
 
@@ -10,11 +10,6 @@ import TaskView from "./views/task-view.vue";
 import TaskAdd from "./views/task-add.vue";
 import TaskEdit from "./views/task-edit.vue";
 import TaskList from "./views/task-list.vue";
-
-const routes = {
-  "/": TaskView,
-  "/create": TaskAdd,
-};
 
 interface State {
   key: number;
@@ -34,20 +29,6 @@ interface State {
     getTasksView(): any {
       return this.$refs["taskView"].instance;
     },
-    currentView(): any {
-      const path = window.location.pathname.slice(1);
-      const tokens = path.split("/");
-      switch (tokens[0]) {
-        case "create":
-          return TaskAdd;
-        case "edit":
-          return TaskEdit;
-        case "list":
-          return TaskList;
-        default:
-          return TaskView;
-      }
-    },
   },
 
   methods: {
@@ -57,20 +38,15 @@ interface State {
     },
 
     showAddView() {
-      // this.$refs.tasksView.showAddView();
-      window.open(window.location + "/");
+      this.$router.push("/create");
     },
 
     showListView() {
-      this.$refs.tasksView.showListView();
-      window.open(window.location + "/list");
+      this.$router.push("/list");
     },
   },
 
   created() {
-    window.addEventListener("hashchange", () => {
-      this.currentPath = window.location.pathname;
-    });
     if (window.VUETASKS && window.VUETASKS.config) {
       this.config = window.VUETASKS.config;
       this.$store.commit(
@@ -101,16 +77,11 @@ interface State {
       let currentCaseRecord = null;
       if (window.VUETASKS.config.currentCaseRecord) {
         currentCaseRecord = this.config.currentCaseRecord;
-        // if (Object.keys(currentCaseRecord).length) {
-        //   this.object = "case";
-        //   this.object_id = currentCaseRecord.get("id");
-        // }
       } else {
         currentCaseRecord = { id: 14 };
       }
       this.$store.commit("tasks/SET_CASE", currentCaseRecord);
       this.$store.dispatch("tasks/fetchTasks");
-      // this.$store.dispatch('tasks/setCase', this.currentCaseRecord)
     }
   },
   data: (): State => {
